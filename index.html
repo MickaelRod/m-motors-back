@@ -51,7 +51,7 @@
             <div id="section-catalogue">
                 <div class="d-flex justify-content-between align-items-center mb-5">
                     <div>
-                        <h1 class="fw-bold">Gestion du catalogue</h1>
+                        <h1 class="fw-bold">Catalogue des véhicules</h1>
                         <p class="text-muted mb-0">Ajoutez, modifiez, supprimez des véhicules ou basculez instantanément leur statut (achat ou location).</p>
                     </div>
                     <div>
@@ -85,8 +85,8 @@
 
             <div id="section-dossiers" class="d-none">
                 <div class="mb-5">
-                    <h1 class="fw-bold">Traitement des dossiers clients</h1>
-                    <p class="text-muted">Consultez l'exhaustivité des demandes de financement, d'achat ou d'information, vérifiez les pièces dématérialisées et statuez sur leur validité.</p>
+                    <h1 class="fw-bold">Demandes clients</h1>
+                    <p class="text-muted">Consultez toutes les demandes, que ce soit les demandes d'achat comptant, d'achat avec financement, de location ou d'ordre général.</p>
                 </div>
 
                 <div class="card shadow-sm">
@@ -99,13 +99,12 @@
                                         <th scope="col" class="small fw-bold text-uppercase">ID</th>
                                         <th scope="col" class="small fw-bold text-uppercase">Demandeur</th>
                                         <th scope="col" class="small fw-bold text-uppercase">Type & Véhicule</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Pièce</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Statut Dossier</th>
-                                        <th scope="col" class="small fw-bold text-uppercase text-end">Actions de validation</th>
+                                        <th scope="col" class="small fw-bold text-uppercase">Pièce jointe</th>
+                                        <th scope="col" class="small fw-bold text-uppercase">Statut demandes</th>
+                                        <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="liste-dossiers-admin">
-                                    </tbody>
+                                <tbody id="liste-dossiers-admin"></tbody>
                             </table>
                         </div>
                     </div>
@@ -259,7 +258,6 @@
             configurerFormulaireModification();
         });
 
-        // Gestion de la navigation par onglet
         function basculerOnglet(onglet) {
             if (onglet === 'catalogue') {
                 document.getElementById('section-catalogue').classList.remove('d-none');
@@ -421,7 +419,7 @@
             });
         }
 
-        function ouvrirFormulaireEdition(idVehicule) {
+        function abrirFormulaireEdition(idVehicule) {
             const vehicule = listeVehiculesLocaux.find(v => parseInt(v.id) === idVehicule);
             if (!vehicule) return;
 
@@ -487,7 +485,6 @@
             } catch (erreur) {}
         }
 
-
         // --- PARTIE 2 : LOGIQUE TRAITEMENT DOSSIERS CLIENTS (US 5) ---
         async function chargerDossiersAdmin() {
             const zoneTableau = document.getElementById('liste-dossiers-admin');
@@ -506,22 +503,30 @@
                 listeDossiersLocaux.forEach(dossier => {
                     const ligne = document.createElement('tr');
                     
-                    // Priorité aux données du compte authentifié, repli sur la saisie formulaire
                     let nomAffichage = dossier.client_nom ? dossier.client_nom : dossier.contact_nom;
                     let emailAffichage = dossier.client_email ? dossier.client_email : dossier.contact_email;
 
-                    // Contexte commercial
-                    let contexte = `<span class="badge bg-secondary">${dossier.type_demande || 'contact'}</span>`;
-                    if (dossier.vehicule_nom) {
+                    // Traduction propre des types de demandes
+                    let libelleType = dossier.type_demande;
+                    if (dossier.type_demande === 'achat') libelleType = 'Achat comptant';
+                    else if (dossier.type_demande === 'location') libelleType = 'Location (LLD)';
+                    else if (dossier.type_demande === 'financement') libelleType = 'Achat avec financement';
+                    else if (dossier.type_demande === 'autre') libelleType = 'Demande générale';
+
+                    // Contexte commercial & Formatage ergonomique du véhicule ciblé
+                    let contexte = `<span class="badge bg-secondary">${libelleType}</span>`;
+                    
+                    if (dossier.vehicule_nom && dossier.vehicule_nom !== 'Non spécifié') {
                         contexte += `<br><span class="small text-muted">${dossier.vehicule_nom} (ID: ${dossier.vehicule_id})</span>`;
+                    } else if (dossier.type_demande !== 'autre') {
+                        // Pour achat/location/financement sans véhicule spécifié
+                        contexte += `<br><span class="small text-muted text-italic">Non spécifié</span>`;
                     }
 
-                    // Bouton de lecture de la pièce dématérialisée
+                    // Bouton de lecture de la pièce jointe
                     let cellulePiece = '<span class="text-muted small">Aucune</span>';
                     if (dossier.document_path) {
-                        // Détection automatique de l'environnement (Local contre Production)
                         const estLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                        // En prod, le fichier est dans /back/uploads/... alors qu'en local il est directement accessible via la racine du port 8001
                         const prefixeChemin = estLocalhost ? '' : '/back';
                         cellulePiece = `<a href="${prefixeChemin}${dossier.document_path}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir le doc</a>`;
                     }
@@ -560,12 +565,25 @@
             const dossier = listeDossiersLocaux.find(d => parseInt(d.id) === idDossier);
             if (!dossier) return;
 
+            let libelleType = dossier.type_demande;
+            if (dossier.type_demande === 'achat') libelleType = 'Achat comptant';
+            else if (dossier.type_demande === 'location') libelleType = 'Location (LLD)';
+            else if (dossier.type_demande === 'financement') libelleType = 'Achat avec financement';
+            else if (dossier.type_demande === 'autre') libelleType = 'Demande générale';
+
             document.getElementById('detail-demandeur-identite').textContent = dossier.client_nom ? dossier.client_nom : dossier.contact_nom;
             document.getElementById('detail-demandeur-email').textContent = `Email : ${dossier.client_email ? dossier.client_email : dossier.contact_email}`;
             document.getElementById('detail-demandeur-tel').textContent = `Tél : ${dossier.client_telephone ? dossier.client_telephone : dossier.contact_telephone}`;
             
-            document.getElementById('detail-contexte-type').textContent = `Démarche : ${dossier.type_demande ? dossier.type_demande.toUpperCase() : 'CONTACT GÉNÉRIQUE'}`;
-            document.getElementById('detail-contexte-vehicule').textContent = dossier.vehicule_nom ? `Modèle visé : ${dossier.vehicule_nom} (ID: ${dossier.vehicule_id})` : 'Aucun véhicule lié';
+            document.getElementById('detail-contexte-type').textContent = `Démarche : ${libelleType.toUpperCase()}`;
+            
+            let texteVehicule = 'Aucun véhicule lié';
+            if (dossier.vehicule_nom && dossier.vehicule_nom !== 'Non spécifié') {
+                texteVehicule = `Modèle visé : ${dossier.vehicule_nom} (ID: ${dossier.vehicule_id})`;
+            } else if (dossier.type_demande !== 'autre') {
+                texteVehicule = 'Modèle visé : Non spécifié';
+            }
+            document.getElementById('detail-contexte-vehicule').textContent = texteVehicule;
             
             document.getElementById('detail-message-contenu').textContent = dossier.message || 'Aucun texte fourni.';
 
