@@ -17,7 +17,9 @@ INSERT INTO vehicules (marque, modele, type_commercial, prix, options_incluses) 
 ('Peugeot', '208', 'achat', 12500, NULL),
 ('Renault', 'Clio', 'location', 190, 'Assurance tous risques, Assistance dépannage'),
 ('Citroën', 'C3', 'location', 175, 'Entretien et SAV, Contrôle technique'),
-('Volkswagen', 'Golf', 'achat', 19800, NULL);
+('Volkswagen', 'Golf', 'achat', 19800, NULL),
+('Toyota', 'Yaris', 'achat', 16200, NULL),
+('Fiat', '500e', 'location', 210, 'Assurance tous risques, Entretien des batteries, Assistance 24/7');
 
 -- ============================================================
 -- Table : messages (User Story 2 - Formulaire de contact & Documents)
