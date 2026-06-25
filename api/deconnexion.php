@@ -1,12 +1,24 @@
 <?php
 $origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost:8001';
 header("Access-Control-Allow-Origin: " . $origine);
-header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
 
-session_name('MMOTORS_BACK_SESSION');
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
+// Détection de la provenance pour cibler le cookie à détruire
+$demandeDepuisFront = (strpos($origine, ':8000') !== false) || (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['REQUEST_URI'], '/back/') === false && $origine !== 'http://localhost:8001');
+
+if ($demandeDepuisFront) {
+    session_name('MMOTORS_FRONT_SESSION');
+} else {
+    session_name('MMOTORS_BACK_SESSION');
+}
+
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

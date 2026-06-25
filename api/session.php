@@ -10,8 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// Alignement sur le nom de session du Back-Office
-session_name('MMOTORS_BACK_SESSION');
+// Détection de la provenance pour attribuer le cookie correct
+$demandeDepuisFront = (strpos($origine, ':8000') !== false) || (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['REQUEST_URI'], '/back/') === false && $origine !== 'http://localhost:8001');
+
+if ($demandeDepuisFront) {
+    session_name('MMOTORS_FRONT_SESSION');
+} else {
+    session_name('MMOTORS_BACK_SESSION');
+}
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();

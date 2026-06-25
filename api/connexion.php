@@ -17,11 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Configuration stricte et isolation de la session du Back-Office
+// --- DYNAMISATION ET ISOLATION DES SESSIONS ---
 ini_set('session.cookie_httponly', 1);
 ini_set('session.cookie_secure', 0); // Passer à 1 en production avec HTTPS
 ini_set('session.cookie_samesite', 'Lax');
-session_name('MMOTORS_BACK_SESSION');
+
+// Détection de la provenance de la requête : Front-Office (port 8000) contre Back-Office (port 8001 ou dossier /back/)
+$demandeDepuisFront = (strpos($origine, ':8000') !== false) || (isset($_SERVER['SERVER_NAME']) && strpos($_SERVER['REQUEST_URI'], '/back/') === false && $origine !== 'http://localhost:8001');
+
+if ($demandeDepuisFront) {
+    session_name('MMOTORS_FRONT_SESSION');
+} else {
+    session_name('MMOTORS_BACK_SESSION');
+}
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
