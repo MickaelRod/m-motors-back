@@ -39,10 +39,10 @@ try {
 
     if ($utilisateur && password_verify($mot_de_passe, $utilisateur['mot_de_passe'])) {
         
-        // SÉCURITÉ : Interdiction stricte aux administrateurs de se connecter sur l'espace client
+        // VERROU SÉCURITÉ : Interdiction aux administrateurs de se connecter sur l'espace client
         if ($utilisateur['role'] === 'admin') {
             http_response_code(403);
-            echo json_encode(["erreur" => "Les comptes d'administration doivent se connecter sur le Back-Office."]);
+            echo json_encode(["erreur" => "Accès refusé. Les comptes d'administration doivent utiliser le Back-Office."]);
             exit();
         }
 

@@ -39,7 +39,7 @@ try {
 
     if ($utilisateur && password_verify($mot_de_passe, $utilisateur['mot_de_passe'])) {
         
-        // SÉCURITÉ : Vérification du rôle d'administration obligatoire
+        // VERROU SÉCURITÉ : Un utilisateur ordinaire ne peut pas se connecter sur le Back-Office
         if ($utilisateur['role'] !== 'admin') {
             http_response_code(403);
             echo json_encode(["erreur" => "Accès interdit. Droits d'administration requis."]);
