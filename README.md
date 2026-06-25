@@ -3,8 +3,8 @@
 Ce dépôt centralise la logique métier, les APIs PHP asynchrones et la gestion de la persistance des données pour l'application M-Motors.
 
 ## Architecture & Déploiement
-* **Branche `main`** : Code de production déployé automatiquement via GitHub Actions sur l'hébergement Hostinger.
-* **Branche `dev`** : Centralisation des fonctionnalités en cours d'intégration.
+* **Branche `main`** : Branche de production synchronisée et déployée automatiquement via un pipeline de livraison continue (CI/CD) par protocole sécurisé vers le serveur d'hébergement.
+* **Branche `dev`** : Centralisation des fonctionnalités et des User Stories en cours d'intégration.
 
 ## Configuration locale
 1. Dupliquez le fichier `config/db.php.dist` et renommez-le en `db.php`.
