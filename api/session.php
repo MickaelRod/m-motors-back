@@ -32,6 +32,7 @@ echo json_encode([
     "utilisateur" => [
         "id" => $_SESSION['utilisateur_id'],
         "nom" => $_SESSION['utilisateur_nom'],
-        "email" => $_SESSION['utilisateur_email']
+        "email" => $_SESSION['utilisateur_email'],
+        "telephone" => isset($_SESSION['utilisateur_telephone']) ? $_SESSION['utilisateur_telephone'] : ''
     ]
 ]);

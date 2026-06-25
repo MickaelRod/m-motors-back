@@ -61,6 +61,7 @@ try {
     $_SESSION['utilisateur_id'] = $utilisateur['id'];
     $_SESSION['utilisateur_nom'] = $utilisateur['nom'];
     $_SESSION['utilisateur_email'] = $utilisateur['email'];
+    $_SESSION['utilisateur_telephone'] = $utilisateur['telephone'];
 
     // Réponse de succès avec exclusion explicite du mot de passe haché pour la sécurité
     echo json_encode([

@@ -32,15 +32,20 @@ require_once __DIR__ . '/../config/db.php';
 $utilisateur_id = $_SESSION['utilisateur_id'];
 
 try {
-    // Récupération des demandes associées à l'utilisateur connecté
+    // Récupération de l'adresse e-mail stockée en session pour la mise en correspondance
+    $utilisateur_email = $_SESSION['utilisateur_email'];
+    // Récupération des demandes associées par identifiant unique ou par adresse e-mail
     // Le tri est effectué de la plus récente à la plus ancienne
     $requete = $bdd->prepare("
         SELECT id, type_demande, vehicule_nom, cree_le, statut_dossier AS statut 
         FROM messages 
-        WHERE utilisateur_id = :utilisateur_id 
+        WHERE utilisateur_id = :utilisateur_id OR email = :utilisateur_email 
         ORDER BY cree_le DESC
     ");
-    $requete->execute(['utilisateur_id' => $utilisateur_id]);
+    $requete->execute([
+        'utilisateur_id'    => $utilisateur_id,
+        'utilisateur_email' => $utilisateur_email
+    ]);
     $demandes = $requete->fetchAll(PDO::FETCH_ASSOC);
 
     // Retourne la liste des demandes, même si elle est vide
