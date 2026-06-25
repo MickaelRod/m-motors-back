@@ -35,3 +35,15 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `statut_dossier` VARCHAR(20) DEFAULT 'en_attente', -- Utile pour le traitement back-office (ex: 'valide', 'refuse')
   `cree_le` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- Table : utilisateurs (User Story 3 - Gestion des comptes clients)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `utilisateurs` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nom` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(150) NOT NULL UNIQUE, -- L'email est unique pour servir d'identifiant de connexion
+  `telephone` VARCHAR(20) NOT NULL,
+  `mot_de_passe` VARCHAR(255) NOT NULL, -- Stockage securise du mot de passe hache
+  `cree_le` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
