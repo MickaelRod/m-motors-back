@@ -10,11 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-session_name('MMOTORS_BACK_SESSION');
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
 require_once __DIR__ . '/../config/db.php';
 
 $type = isset($_GET['type']) ? trim($_GET['type']) : '';

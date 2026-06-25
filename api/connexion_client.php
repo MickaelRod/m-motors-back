@@ -38,6 +38,14 @@ try {
     $utilisateur = $requete->fetch(PDO::FETCH_ASSOC);
 
     if ($utilisateur && password_verify($mot_de_passe, $utilisateur['mot_de_passe'])) {
+        
+        // SÉCURITÉ : Interdiction stricte aux administrateurs de se connecter sur l'espace client
+        if ($utilisateur['role'] === 'admin') {
+            http_response_code(403);
+            echo json_encode(["erreur" => "Les comptes d'administration doivent se connecter sur le Back-Office."]);
+            exit();
+        }
+
         session_regenerate_id(true);
 
         $_SESSION['utilisateur_id'] = $utilisateur['id'];

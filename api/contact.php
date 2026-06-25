@@ -20,7 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Démarrage de la session PHP sécurisée pour intercepter le client connecté
+// Alignement sur la session du Front-Office pour lier le message au bon client connecté
+session_name('MMOTORS_FRONT_SESSION');
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
