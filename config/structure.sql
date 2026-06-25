@@ -27,8 +27,11 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `nom` VARCHAR(100) NOT NULL,
   `email` VARCHAR(150) NOT NULL,
   `telephone` VARCHAR(20) NOT NULL,
-  `sujet` VARCHAR(255) NOT NULL, -- Ex: "Achat comptant - Renault Clio" ou "Demande générale"
+  `type_demande` VARCHAR(30) NOT NULL, -- Valeurs strictes : 'achat', 'financement', 'location', 'autre'
+  `vehicule_id` INT DEFAULT NULL, -- Identifiant unique du véhicule lié (clé étrangère logique)
+  `vehicule_nom` VARCHAR(100) DEFAULT NULL, -- Nom du véhicule pour historique (ex: "Peugeot 208")
   `message` TEXT NOT NULL,
-  `document_path` VARCHAR(255) DEFAULT NULL, -- Chemin ou nom du fichier justificatif sur le serveur
+  `document_path` VARCHAR(255) DEFAULT NULL,
+  `statut_dossier` VARCHAR(20) DEFAULT 'en_attente', -- Utile pour le traitement back-office (ex: 'valide', 'refuse')
   `cree_le` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
