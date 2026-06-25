@@ -8,48 +8,75 @@
 </head>
 <body class="bg-light">
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.html">M-MOTORS | Administration</a>
-        </div>
-    </nav>
-
-    <main class="container py-5" style="max-width: 1100px;">
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <h1 class="fw-bold">Gestion du catalogue</h1>
-                <p class="text-muted mb-0">Ajoutez, modifiez, supprimez des véhicules ou basculez instantanément leur statut (achat ou location).</p>
-            </div>
-            <div>
-                <button class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#modalAjout">
-                    Ajouter un véhicule
-                </button>
-            </div>
-        </div>
-
-        <div class="card shadow-sm mb-5">
-            <div class="card-body p-4">
-                <h4 class="card-title fw-bold mb-4">Véhicules en stock</h4>
+    <div id="zone-connexion" class="container d-none" style="max-width: 450px; margin-top: 10%;">
+        <div class="card shadow border-0">
+            <div class="card-body p-4 text-center">
+                <h3 class="fw-bold mb-2">M-MOTORS</h3>
+                <p class="text-muted small mb-4">Espace d'administration réservé au personnel</p>
                 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th scope="col" class="small fw-bold text-uppercase">ID</th>
-                                <th scope="col" class="small fw-bold text-uppercase">Marque</th>
-                                <th scope="col" class="small fw-bold text-uppercase">Modèle</th>
-                                <th scope="col" class="small fw-bold text-uppercase">Statut commercial</th>
-                                <th scope="col" class="small fw-bold text-uppercase">Prix / Mensualité</th>
-                                <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="liste-vehicules-admin">
-                            </tbody>
-                    </table>
+                <form id="formulaire-connexion-back">
+                    <div class="mb-3 text-start">
+                        <label for="login-email" class="form-label small fw-bold">Adresse email</label>
+                        <input type="email" class="form-control" id="login-email" required placeholder="email@email.com">
+                    </div>
+                    <div class="mb-4 text-start">
+                        <label for="login-mdp" class="form-label small fw-bold">Mot de passe</label>
+                        <input type="password" class="form-control" id="login-mdp" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark fw-bold py-2">Se connecter</button>
+                    </div>
+                </form>
+                <div id="connexion-erreur" class="alert alert-danger text-center small mt-3 d-none" role="alert"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="zone-administration" class="d-none">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="index.html">M-MOTORS | Administration</a>
+                <button class="btn btn-outline-light btn-sm fw-bold px-3" onclick="deconnecterAdmin()">Déconnexion</button>
+            </div>
+        </nav>
+
+        <main class="container py-5" style="max-width: 1100px;">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="fw-bold">Gestion du catalogue</h1>
+                    <p class="text-muted mb-0">Ajoutez, modifiez, supprimez des véhicules ou basculez instantanément leur statut (achat ou location).</p>
+                </div>
+                <div>
+                    <button class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#modalAjout">
+                        Ajouter un véhicule
+                    </button>
                 </div>
             </div>
-        </div>
-    </main>
+
+            <div class="card shadow-sm mb-5">
+                <div class="card-body p-4">
+                    <h4 class="card-title fw-bold mb-4">Véhicules en stock</h4>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="small fw-bold text-uppercase">ID</th>
+                                    <th scope="col" class="small fw-bold text-uppercase">Marque</th>
+                                    <th scope="col" class="small fw-bold text-uppercase">Modèle</th>
+                                    <th scope="col" class="small fw-bold text-uppercase">Statut commercial</th>
+                                    <th scope="col" class="small fw-bold text-uppercase">Prix / Mensualité</th>
+                                    <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="liste-vehicules-admin">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <div class="modal fade" id="modalAjout" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -154,15 +181,91 @@
         document.addEventListener('DOMContentLoaded', () => {
             modalEditionInstance = new bootstrap.Modal(document.getElementById('modalModification'));
             modalAjoutInstance = new bootstrap.Modal(document.getElementById('modalAjout'));
-            chargerCatalogueAdmin();
+            verifierAuthentification();
+            configurerFormulaireConnexion();
             configurerFormulaireAjout();
             configurerFormulaireModification();
         });
 
-        // Récupération des données du catalogue depuis l'API de recherche
+        // Vérification de l'état de la session au chargement
+        async function verifierAuthentification() {
+            try {
+                const reponse = await fetch('api/session.php', { method: 'GET', credentials: 'include' });
+                if (reponse.ok) {
+                    const session = await reponse.json();
+                    if (session.connecte && session.utilisateur.role === 'admin') {
+                        afficherEspaceAdmin();
+                        return;
+                    }
+                }
+                afficherEcranConnexion();
+            } catch (erreur) {
+                afficherEcranConnexion();
+            }
+        }
+
+        function afficherEspaceAdmin() {
+            document.getElementById('zone-connexion').classList.add('d-none');
+            document.getElementById('zone-administration').classList.remove('d-none');
+            chargerCatalogueAdmin();
+        }
+
+        function afficherEcranConnexion() {
+            document.getElementById('zone-administration').classList.add('d-none');
+            document.getElementById('zone-connexion').classList.remove('d-none');
+        }
+
+        // Configuration de la soumission du formulaire de connexion
+        function configurerFormulaireConnexion() {
+            const formulaire = document.getElementById('formulaire-connexion-back');
+            const zoneErreur = document.getElementById('connexion-erreur');
+
+            formulaire.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                zoneErreur.classList.add('d-none');
+
+                const identifiants = {
+                    email: document.getElementById('login-email').value,
+                    mot_de_passe: document.getElementById('login-mdp').value
+                };
+
+                try {
+                    const reponse = await fetch('api/connexion.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(identifiants),
+                        credentials: 'include'
+                    });
+
+                    const resultat = await reponse.json();
+
+                    if (reponse.ok && resultat.utilisateur.role === 'admin') {
+                        formulaire.reset();
+                        afficherEspaceAdmin();
+                    } else {
+                        zoneErreur.textContent = "Accès refusé. Identifiants incorrects ou droits insuffisants.";
+                        zoneErreur.classList.remove('d-none');
+                    }
+                } catch (erreur) {
+                    zoneErreur.textContent = "Impossible de joindre le serveur d'authentification.";
+                    zoneErreur.classList.remove('d-none');
+                }
+            });
+        }
+
+        // Fonction de déconnexion
+        async function deconnecterAdmin() {
+            try {
+                await fetch('api/deconnexion.php', { method: 'GET', credentials: 'include' });
+                afficherEcranConnexion();
+            } catch (erreur) {
+                afficherEcranConnexion();
+            }
+        }
+
+        // Récupération du catalogue
         async function chargerCatalogueAdmin() {
             const zoneTableau = document.getElementById('liste-vehicules-admin');
-            
             try {
                 const reponse = await fetch('api/recherche.php');
                 if (!reponse.ok) throw new Error();
@@ -177,23 +280,15 @@
 
                 listeVehiculesLocaux.forEach(vehicule => {
                     const ligne = document.createElement('tr');
-                    
-                    let badgeType = '';
-                    if (vehicule.type_commercial === 'achat') {
-                        badgeType = '<span class="badge bg-success">Achat d\'occasion</span>';
-                    } else {
-                        badgeType = '<span class="badge bg-info">Location longue durée</span>';
-                    }
+                    let badgeType = (vehicule.type_commercial === 'achat') 
+                        ? '<span class="badge bg-success">Achat d\'occasion</span>' 
+                        : '<span class="badge bg-info">Location longue durée</span>';
 
                     let textePrix = '';
                     if (vehicule.type_commercial === 'achat') {
-                        textePrix = (vehicule.prix_achat && parseInt(vehicule.prix_achat) > 0)
-                            ? `${vehicule.prix_achat} €`
-                            : "Non renseigné (Achat)";
+                        textePrix = (vehicule.prix_achat && parseInt(vehicule.prix_achat) > 0) ? `${vehicule.prix_achat} €` : "Non renseigné (Achat)";
                     } else {
-                        textePrix = (vehicule.prix_location && parseInt(vehicule.prix_location) > 0)
-                            ? `${vehicule.prix_location} € / mois`
-                            : "Non renseigné (Location)";
+                        textePrix = (vehicule.prix_location && parseInt(vehicule.prix_location) > 0) ? `${vehicule.prix_location} € / mois` : "Non renseigné (Location)";
                     }
 
                     ligne.innerHTML = `
@@ -210,23 +305,17 @@
                     `;
                     zoneTableau.appendChild(ligne);
                 });
-
             } catch (erreur) {
                 zoneTableau.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Impossible de charger le catalogue d\'administration.</td></tr>';
             }
         }
 
-        // Configuration de la soumission de l'ajout
         function configurerFormulaireAjout() {
             const formulaire = document.getElementById('formulaire-ajout-vehicule');
             const zoneReponse = document.getElementById('ajout-reponse');
 
             formulaire.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                zoneReponse.className = "alert alert-info py-1 px-3 mb-0 me-auto small";
-                zoneReponse.textContent = "Enregistrement en cours...";
-                zoneReponse.classList.remove('d-none');
-
                 const donneesVehicule = {
                     marque: document.getElementById('add-marque').value,
                     modele: document.getElementById('add-modele').value,
@@ -244,20 +333,13 @@
                     });
                     if (reponse.ok) {
                         formulaire.reset();
-                        zoneReponse.classList.add('d-none');
                         modalAjoutInstance.hide();
                         chargerCatalogueAdmin();
-                    } else {
-                        throw new Error();
                     }
-                } catch (erreur) {
-                    zoneReponse.className = "alert alert-danger py-1 px-3 mb-0 me-auto small";
-                    zoneReponse.textContent = "Erreur d'enregistrement.";
-                }
+                } catch (erreur) {}
             });
         }
 
-        // Remplissage et ouverture de la fenêtre modale d'édition
         function ouvrirFormulaireEdition(idVehicule) {
             const vehicule = listeVehiculesLocaux.find(v => parseInt(v.id) === idVehicule);
             if (!vehicule) return;
@@ -273,12 +355,10 @@
             modalEditionInstance.show();
         }
 
-        // Traitement de la modification
         function configurerFormulaireModification() {
             const formulaire = document.getElementById('formulaire-modification-vehicule');
             formulaire.addEventListener('submit', async (e) => {
                 e.preventDefault();
-
                 const donneesModification = {
                     id: document.getElementById('edit-id').value,
                     marque: document.getElementById('edit-marque').value,
@@ -295,20 +375,14 @@
                         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
                         body: JSON.stringify(donneesModification)
                     });
-
                     if (reponse.ok) {
                         modalEditionInstance.hide();
                         chargerCatalogueAdmin();
-                    } else {
-                        alert("Erreur lors de la mise à jour.");
                     }
-                } catch (erreur) {
-                    alert("Erreur technique de connexion.");
-                }
+                } catch (erreur) {}
             });
         }
 
-        // Appel de la bascule de statut
         async function basculerStatutVehicule(idVehicule) {
             try {
                 const reponse = await fetch('api/bascule_statut.php', {
@@ -320,25 +394,16 @@
             } catch (erreur) {}
         }
 
-        // Appel de la suppression
         async function supprimerVehicule(idVehicule) {
             if (!confirm("Confirmez-vous la suppression définitive de ce véhicule du stock ?")) return;
-
             try {
                 const reponse = await fetch('api/supprimer_vehicule.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json; charset=UTF-8' },
                     body: JSON.stringify({ id: idVehicule })
                 });
-
-                if (reponse.ok) {
-                    chargerCatalogueAdmin();
-                } else {
-                    alert("Erreur lors de la suppression.");
-                }
-            } catch (erreur) {
-                alert("Erreur réseau.");
-            }
+                if (reponse.ok) chargerCatalogueAdmin();
+            } catch (erreur) {}
         }
     </script>
 </body>

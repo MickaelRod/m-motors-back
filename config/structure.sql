@@ -54,3 +54,10 @@ CREATE TABLE IF NOT EXISTS `utilisateurs` (
   `mot_de_passe` VARCHAR(255) NOT NULL, -- Stockage securise du mot de passe hache
   `cree_le` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Ajout du champ role avec la valeur 'client' par défaut (User Story 4 - Gestion des véhicules dans le Back-Office)
+ALTER TABLE utilisateurs ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'client' AFTER mot_de_passe;
+
+-- Insertion du compte administrateur requis par l'énoncé (User Story 4 - Gestion des véhicules dans le Back-Office)
+INSERT INTO utilisateurs (nom, email, telephone, mot_de_passe, role) 
+VALUES ('Administrateur', 'admin@m-motors.fr', '0102030405', '$2y$10$7vMhUjG19Zg.eBvF.qjZQuP3/63jX8w3U6Kfe5BwIscT9f0gA8fUe', 'admin');
