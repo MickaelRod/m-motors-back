@@ -4,7 +4,6 @@ header("Access-Control-Allow-Origin: http://localhost:8000");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// Si c'est une requête de vérification (OPTIONS), on arrête le script ici
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
@@ -19,21 +18,21 @@ header("Content-Type: application/json; charset=UTF-8");
 $type = isset($_GET['type']) ? trim($_GET['type']) : '';
 
 try {
-    // Si un type valide est fourni, on filtre. Sinon, on renvoie tout le catalogue.
+    // Sélection explicite des nouvelles colonnes de prix d'achat et de location
     if ($type === 'achat' || $type === 'location') {
-        $requete = $bdd->prepare("SELECT id, marque, modele, type_commercial, prix, options_incluses FROM vehicules WHERE type_commercial = :type");
+        $requete = $bdd->prepare("SELECT id, marque, modele, prix_achat, prix_location, type_commercial, options_incluses FROM vehicules WHERE type_commercial = :type");
         $requete->execute(['type' => $type]);
     } else {
-        $requete = $bdd->prepare("SELECT id, marque, modele, type_commercial, prix, options_incluses FROM vehicules");
+        $requete = $bdd->prepare("SELECT id, marque, modele, prix_achat, prix_location, type_commercial, options_incluses FROM vehicules");
         $requete->execute();
     }
 
     $vehicules = $requete->fetchAll();
 
-    // Renvoi des données sous format JSON à l'interface utilisateur
+    // Renvoi des données au format JSON
     echo json_encode($vehicules);
 
 } catch (PDOException $erreur) {
     http_response_code(500);
-    echo json_encode(["erreur" => "Erreur lors de la recuperation du catalogue."]);
+    echo json_encode(["erreur" => "Erreur lors de la récupération du catalogue."]);
 }

@@ -7,19 +7,20 @@ CREATE TABLE IF NOT EXISTS vehicules (
     id INT AUTO_INCREMENT PRIMARY KEY,
     marque VARCHAR(50) NOT NULL,
     modele VARCHAR(50) NOT NULL,
+    prix_achat INT NULL, -- Prix d'achat total (si applicable)
+    prix_location INT NULL, -- Prix mensuel de la location (si applicable)
     type_commercial VARCHAR(20) NOT NULL, -- Valeurs : 'achat' ou 'location'
-    prix INT NOT NULL, -- Prix d'achat total ou mensualité de location
     options_incluses TEXT NULL -- Options LLD (Assurance, Assistance, Entretien, etc.)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
+²
 -- Insertion d'un jeu de données de test pour le catalogue
-INSERT INTO vehicules (marque, modele, type_commercial, prix, options_incluses) VALUES
-('Peugeot', '208', 'achat', 12500, NULL),
-('Renault', 'Clio', 'location', 190, 'Assurance tous risques, Assistance dépannage'),
-('Citroën', 'C3', 'location', 175, 'Entretien et SAV, Contrôle technique'),
-('Volkswagen', 'Golf', 'achat', 19800, NULL),
-('Toyota', 'Yaris', 'achat', 16200, NULL),
-('Fiat', '500e', 'location', 210, 'Assurance tous risques, Entretien des batteries, Assistance 24/7');
+INSERT INTO vehicules (marque, modele, type_commercial, prix_achat, prix_location, options_incluses) VALUES
+('Peugeot', '208', 'achat', 12500, 150, NULL),
+('Renault', 'Clio', 'location', 15000, 190, 'Assurance tous risques, Assistance dépannage'),
+('Citroën', 'C3', 'location', 14200, 175, 'Entretien et SAV, Contrôle technique'),
+('Volkswagen', 'Golf', 'achat', 19800, 240, NULL),
+('Toyota', 'Yaris', 'achat', 16200, 195, NULL),
+('Fiat', '500e', 'location', 22000, 210, 'Assurance tous risques, Entretien des batteries, Assistance 24/7');
 
 -- ============================================================
 -- Table : messages (User Story 2 - Formulaire de contact & Documents)

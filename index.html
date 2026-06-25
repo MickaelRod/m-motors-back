@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Motors - Administration Back-Office</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">M-MOTORS | Administration</a>
+        </div>
+    </nav>
+
+    <main class="container py-5" style="max-width: 1100px;">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="fw-bold">Gestion du catalogue</h1>
+                <p class="text-muted mb-0">Ajoutez, modifiez, supprimez des véhicules ou basculez instantanément leur statut (achat ou location).</p>
+            </div>
+            <div>
+                <button class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#modalAjout">
+                    Ajouter un véhicule
+                </button>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-5">
+            <div class="card-body p-4">
+                <h4 class="card-title fw-bold mb-4">Véhicules en stock</h4>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="small fw-bold text-uppercase">ID</th>
+                                <th scope="col" class="small fw-bold text-uppercase">Marque</th>
+                                <th scope="col" class="small fw-bold text-uppercase">Modèle</th>
+                                <th scope="col" class="small fw-bold text-uppercase">Statut commercial</th>
+                                <th scope="col" class="small fw-bold text-uppercase">Prix / Mensualité</th>
+                                <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liste-vehicules-admin">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="modalAjout" tabindex="-1" aria-labelledby="modalAjoutLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalAjoutLabel">Ajouter un véhicule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form id="formulaire-ajout-vehicule">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label for="add-marque" class="form-label small fw-bold">Marque</label>
+                            <input type="text" class="form-control" id="add-marque" required placeholder="ex: Renault">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="add-modele" class="form-label small fw-bold">Modèle</label>
+                            <input type="text" class="form-control" id="add-modele" required placeholder="ex: Clio">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="add-type" class="form-label small fw-bold">Statut</label>
+                            <select class="form-select" id="add-type" required>
+                                <option value="achat" selected>Achat direct</option>
+                                <option value="location">Location (LLD)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="add-prix-achat" class="form-label small fw-bold">Prix d'achat (€)</label>
+                            <input type="number" class="form-control" id="add-prix-achat" placeholder="ex: 15000">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="add-prix-location" class="form-label small fw-bold">Mensualité LLD (€)</label>
+                            <input type="number" class="form-control" id="add-prix-location" placeholder="ex: 190">
+                        </div>
+                        <div class="col-12">
+                            <label for="add-options" class="form-label small fw-bold">Options incluses (LLD uniquement)</label>
+                            <input type="text" class="form-control" id="add-options" placeholder="ex: Assurance tous risques, Assistance dépannage">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div id="ajout-reponse" class="alert d-none py-1 px-3 mb-0 me-auto small" role="alert"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success btn-sm px-4 fw-bold">Créer le véhicule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalModification" tabindex="-1" aria-labelledby="modalModificationLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalModificationLabel">Modifier la fiche véhicule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form id="formulaire-modification-vehicule">
+                    <div class="modal-body row g-3">
+                        <input type="hidden" id="edit-id">
+                        <div class="col-md-6">
+                            <label for="edit-marque" class="form-label small fw-bold">Marque</label>
+                            <input type="text" class="form-control" id="edit-marque" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit-modele" class="form-label small fw-bold">Modèle</label>
+                            <input type="text" class="form-control" id="edit-modele" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-type" class="form-label small fw-bold">Statut commercial</label>
+                            <select class="form-select" id="edit-type" required>
+                                <option value="achat">Achat direct</option>
+                                <option value="location">Location (LLD)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-prix-achat" class="form-label small fw-bold">Prix d'achat (€)</label>
+                            <input type="number" class="form-control" id="edit-prix-achat">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="edit-prix-location" class="form-label small fw-bold">Mensualité LLD (€)</label>
+                            <input type="number" class="form-control" id="edit-prix-location">
+                        </div>
+                        <div class="col-12">
+                            <label for="edit-options" class="form-label small fw-bold">Options incluses (LLD)</label>
+                            <input type="text" class="form-control" id="edit-options">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let listeVehiculesLocaux = [];
+        let modalEditionInstance = null;
+        let modalAjoutInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalEditionInstance = new bootstrap.Modal(document.getElementById('modalModification'));
+            modalAjoutInstance = new bootstrap.Modal(document.getElementById('modalAjout'));
+            chargerCatalogueAdmin();
+            configurerFormulaireAjout();
+            configurerFormulaireModification();
+        });
+
+        // Récupération des données du catalogue depuis l'API de recherche
+        async function chargerCatalogueAdmin() {
+            const zoneTableau = document.getElementById('liste-vehicules-admin');
+            
+            try {
+                const reponse = await fetch('api/recherche.php');
+                if (!reponse.ok) throw new Error();
+                
+                listeVehiculesLocaux = await reponse.json();
+                zoneTableau.innerHTML = '';
+
+                if (listeVehiculesLocaux.length === 0) {
+                    zoneTableau.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucun véhicule enregistré.</td></tr>';
+                    return;
+                }
+
+                listeVehiculesLocaux.forEach(vehicule => {
+                    const ligne = document.createElement('tr');
+                    
+                    let badgeType = '';
+                    if (vehicule.type_commercial === 'achat') {
+                        badgeType = '<span class="badge bg-success">Achat d\'occasion</span>';
+                    } else {
+                        badgeType = '<span class="badge bg-info">Location longue durée</span>';
+                    }
+
+                    let textePrix = '';
+                    if (vehicule.type_commercial === 'achat') {
+                        textePrix = (vehicule.prix_achat && parseInt(vehicule.prix_achat) > 0)
+                            ? `${vehicule.prix_achat} €`
+                            : "Non renseigné (Achat)";
+                    } else {
+                        textePrix = (vehicule.prix_location && parseInt(vehicule.prix_location) > 0)
+                            ? `${vehicule.prix_location} € / mois`
+                            : "Non renseigné (Location)";
+                    }
+
+                    ligne.innerHTML = `
+                        <td class="small text-muted">${vehicule.id}</td>
+                        <td class="fw-bold small">${vehicule.marque}</td>
+                        <td class="small">${vehicule.modele}</td>
+                        <td>${badgeType}</td>
+                        <td class="fw-semibold small">${textePrix}</td>
+                        <td class="text-end">
+                            <button class="btn btn-outline-primary btn-sm me-1" onclick="basculerStatutVehicule(${vehicule.id})">Bascule achat/location</button>
+                            <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEdition(${vehicule.id})">Modifier</button>
+                            <button class="btn btn-danger btn-sm" onclick="supprimerVehicule(${vehicule.id})">Supprimer</button>
+                        </td>
+                    `;
+                    zoneTableau.appendChild(ligne);
+                });
+
+            } catch (erreur) {
+                zoneTableau.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Impossible de charger le catalogue d\'administration.</td></tr>';
+            }
+        }
+
+        // Configuration de la soumission de l'ajout
+        function configurerFormulaireAjout() {
+            const formulaire = document.getElementById('formulaire-ajout-vehicule');
+            const zoneReponse = document.getElementById('ajout-reponse');
+
+            formulaire.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                zoneReponse.className = "alert alert-info py-1 px-3 mb-0 me-auto small";
+                zoneReponse.textContent = "Enregistrement en cours...";
+                zoneReponse.classList.remove('d-none');
+
+                const donneesVehicule = {
+                    marque: document.getElementById('add-marque').value,
+                    modele: document.getElementById('add-modele').value,
+                    type_commercial: document.getElementById('add-type').value,
+                    prix_achat: document.getElementById('add-prix-achat').value || null,
+                    prix_location: document.getElementById('add-prix-location').value || null,
+                    options_incluses: document.getElementById('add-options').value || null
+                };
+
+                try {
+                    const reponse = await fetch('api/ajouter_vehicule.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(donneesVehicule)
+                    });
+                    if (reponse.ok) {
+                        formulaire.reset();
+                        zoneReponse.classList.add('d-none');
+                        modalAjoutInstance.hide();
+                        chargerCatalogueAdmin();
+                    } else {
+                        throw new Error();
+                    }
+                } catch (erreur) {
+                    zoneReponse.className = "alert alert-danger py-1 px-3 mb-0 me-auto small";
+                    zoneReponse.textContent = "Erreur d'enregistrement.";
+                }
+            });
+        }
+
+        // Remplissage et ouverture de la fenêtre modale d'édition
+        function ouvrirFormulaireEdition(idVehicule) {
+            const vehicule = listeVehiculesLocaux.find(v => parseInt(v.id) === idVehicule);
+            if (!vehicule) return;
+
+            document.getElementById('edit-id').value = vehicule.id;
+            document.getElementById('edit-marque').value = vehicule.marque;
+            document.getElementById('edit-modele').value = vehicule.modele;
+            document.getElementById('edit-type').value = vehicule.type_commercial;
+            document.getElementById('edit-prix-achat').value = vehicule.prix_achat || '';
+            document.getElementById('edit-prix-location').value = vehicule.prix_location || '';
+            document.getElementById('edit-options').value = vehicule.options_incluses || '';
+
+            modalEditionInstance.show();
+        }
+
+        // Traitement de la modification
+        function configurerFormulaireModification() {
+            const formulaire = document.getElementById('formulaire-modification-vehicule');
+            formulaire.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const donneesModification = {
+                    id: document.getElementById('edit-id').value,
+                    marque: document.getElementById('edit-marque').value,
+                    modele: document.getElementById('edit-modele').value,
+                    type_commercial: document.getElementById('edit-type').value,
+                    prix_achat: document.getElementById('edit-prix-achat').value || null,
+                    prix_location: document.getElementById('edit-prix-location').value || null,
+                    options_incluses: document.getElementById('edit-options').value || null
+                };
+
+                try {
+                    const reponse = await fetch('api/modifier_vehicule.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(donneesModification)
+                    });
+
+                    if (reponse.ok) {
+                        modalEditionInstance.hide();
+                        chargerCatalogueAdmin();
+                    } else {
+                        alert("Erreur lors de la mise à jour.");
+                    }
+                } catch (erreur) {
+                    alert("Erreur technique de connexion.");
+                }
+            });
+        }
+
+        // Appel de la bascule de statut
+        async function basculerStatutVehicule(idVehicule) {
+            try {
+                const reponse = await fetch('api/bascule_statut.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                    body: JSON.stringify({ id: idVehicule })
+                });
+                if (reponse.ok) chargerCatalogueAdmin();
+            } catch (erreur) {}
+        }
+
+        // Appel de la suppression
+        async function supprimerVehicule(idVehicule) {
+            if (!confirm("Confirmez-vous la suppression définitive de ce véhicule du stock ?")) return;
+
+            try {
+                const reponse = await fetch('api/supprimer_vehicule.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                    body: JSON.stringify({ id: idVehicule })
+                });
+
+                if (reponse.ok) {
+                    chargerCatalogueAdmin();
+                } else {
+                    alert("Erreur lors de la suppression.");
+                }
+            } catch (erreur) {
+                alert("Erreur réseau.");
+            }
+        }
+    </script>
+</body>
+</html>
