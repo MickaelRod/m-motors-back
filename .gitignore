@@ -1,0 +1,4 @@
+# Exclusion des pièces justificatives téléversées par les utilisateurs
+uploads/*
+# Exception pour conserver le dossier vide dans le dépôt Git
+!uploads/.gitkeep
