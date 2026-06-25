@@ -1,0 +1,43 @@
+<?php
+// Autorise le Front-Office local (port 8000) à interroger cette API
+header("Access-Control-Allow-Origin: http://localhost:8000");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
+// Détection automatique de l'environnement (Local contre Production)
+$estLocalhost = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']) || $_SERVER['SERVER_NAME'] === 'localhost';
+
+if ($estLocalhost) {
+    // Configuration pour les tests en environnement de développement local
+    $serveur = "VOTRE_SERVEUR_SQL_LOCAL"; // ex: localhost ou hôte de dev
+    $nom_bdd = "NOM_DE_LA_BDD_LOCAL";
+    $utilisateur = "UTILISATEUR_LOCAL";
+    $mot_de_passe = "MOT_DE_PASSE_LOCAL";
+} else {
+    // Configuration pour le serveur d'hébergement en environnement de production
+    $serveur = "localhost";
+    $nom_bdd = "NOM_DE_LA_BDD_PROD";
+    $utilisateur = "UTILISATEUR_PROD";
+    $mot_de_passe = "MOT_DE_PASSE_PROD";
+}
+
+try {
+    $bdd = new PDO(
+        "mysql:host=$serveur;dbname=$nom_bdd;charset=utf8mb4",
+        $utilisateur,
+        $mot_de_passe,
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    );
+} catch (PDOException $erreur) {
+    http_response_code(500);
+    echo json_encode(["erreur" => "Impossible de se connecter au serveur de donnees."]);
+    exit();
+}
