@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS `messages` (
   `cree_le` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Ajout de la clé étrangère pour lier un message ou une demande à un utilisateur inscrit
+ALTER TABLE messages ADD COLUMN utilisateur_id INT NULL DEFAULT NULL AFTER id;
+ALTER TABLE messages ADD CONSTRAINT fk_messages_utilisateurs FOREIGN KEY (utilisateur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL;
+
 -- ============================================================
 -- Table : utilisateurs (User Story 3 - Gestion des comptes clients)
 -- ============================================================

@@ -1,8 +1,13 @@
 <?php
-// Autorise le Front-Office local (port 8000) à interroger cette API
+// Configuration stricte des cookies de session de manière globale avant tout démarrage
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_use_only_cookies', 1);
+
+// Autorisation du Front-Office local avec support explicite des cookies de session
 header("Access-Control-Allow-Origin: http://localhost:8000");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Credentials: true");
 header("Content-Type: application/json; charset=UTF-8");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -15,101 +20,79 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Inclusion du fichier de connexion à la base de données
+// Démarrage de la session PHP sécurisée pour intercepter le client connecté
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Inclusion de la connexion à la base de données
 require_once __DIR__ . '/../config/db.php';
 
-// Récupération et nettoyage des données textuelles du formulaire
+// Récupération des données depuis la superglobale $_POST (format multipart/form-data)
 $nom = isset($_POST['nom']) ? trim($_POST['nom']) : '';
 $telephone = isset($_POST['telephone']) ? trim($_POST['telephone']) : '';
 $email = isset($_POST['email']) ? trim($_POST['email']) : '';
 $type_demande = isset($_POST['type_demande']) ? trim($_POST['type_demande']) : '';
 $vehicule_id = isset($_POST['vehicule_id']) && $_POST['vehicule_id'] !== '' ? intval($_POST['vehicule_id']) : null;
-$vehicule_nom = isset($_POST['vehicule_nom']) && $_POST['vehicule_nom'] !== '' ? trim($_POST['vehicule_nom']) : null;
+$vehicule_nom = isset($_POST['vehicule_nom']) ? trim($_POST['vehicule_nom']) : '';
 $message = isset($_POST['message']) ? trim($_POST['message']) : '';
 
-// Validation des champs obligatoires du formulaire
-if (empty($nom) || empty($telephone) || empty($email) || empty($type_demande) || empty($message)) {
+// Validation des champs strictement obligatoires
+if (empty($nom) || empty($email) || empty($type_demande)) {
     http_response_code(400);
-    echo json_encode(["erreur" => "Tous les champs obligatoires du formulaire doivent être remplis."]);
+    echo json_encode(["erreur" => "Les champs Nom, Email et Type de demande sont obligatoires."]);
     exit();
 }
 
-// Liste des types de demandes autorisés par la structure applicative
-$types_autorises = ['achat', 'financement', 'location', 'autre'];
-if (!in_array($type_demande, $types_autorises)) {
-    http_response_code(400);
-    echo json_encode(["erreur" => "Le type de demande spécifié n'est pas valide."]);
-    exit();
-}
+// Récupération de l'identifiant utilisateur si la session serveur est active
+$utilisateur_id = isset($_SESSION['utilisateur_id']) ? $_SESSION['utilisateur_id'] : null;
 
-// Gestion du téléversement de la pièce justificative
-$document_nom_final = null;
-
-// Vérification des erreurs de téléversement liées aux limites du serveur
-if (isset($_FILES['document'])) {
-    if ($_FILES['document']['error'] === UPLOAD_ERR_INI_SIZE) {
-        http_response_code(400);
-        echo json_encode(["erreur" => "Le fichier dépasse la taille maximale autorisée par le serveur informatique."]);
-        exit();
+// Gestion du téléchargement du fichier (pièce jointe)
+$chemin_document = null;
+if (isset($_FILES['document']) && $_FILES['document']['error'] === UPLOAD_ERR_OK) {
+    $dossier_destination = __DIR__ . '/../uploads/';
+    
+    // Création du dossier s'il n'existe pas
+    if (!is_dir($dossier_destination)) {
+        mkdir($dossier_destination, 0755, true);
     }
 
-    if ($_FILES['document']['error'] === UPLOAD_ERR_OK) {
-        $fichier_temporaire = $_FILES['document']['tmp_name'];
-        $fichier_nom_origine = $_FILES['document']['name'];
-        $fichier_taille = $_FILES['document']['size'];
-        
-        $extension = strtolower(pathinfo($fichier_nom_origine, PATHINFO_EXTENSION));
-        $extensions_autorisees = ['pdf', 'jpg', 'jpeg', 'png'];
-        
-        if (!in_array($extension, $extensions_autorisees)) {
-            http_response_code(400);
-            echo json_encode(["erreur" => "Format de fichier non valide (uniquement PDF, JPG, PNG)."]);
-            exit();
-        }
-        
-        if ($fichier_taille > 5 * 1024 * 1024) {
-            http_response_code(400);
-            echo json_encode(["erreur" => "Le fichier est trop volumineux (maximum 5 Mo)."]);
-            exit();
-        }
-        
-        $dossier_stockage = __DIR__ . '/../uploads/';
-        if (!is_dir($dossier_stockage)) {
-            mkdir($dossier_stockage, 0755, true);
-        }
-        
-        $document_nom_final = uniqid('doc_', true) . '.' . $extension;
-        $chemin_destination = $dossier_stockage . $document_nom_final;
-        
-        if (!move_uploaded_file($fichier_temporaire, $chemin_destination)) {
-            http_response_code(500);
-            echo json_encode(["erreur" => "Erreur technique lors de l'enregistrement de la pièce justificative."]);
-            exit();
-        }
+    $nom_fichier_origine = basename($_FILES['document']['name']);
+    $extension = strtolower(pathinfo($nom_fichier_origine, PATHINFO_EXTENSION));
+    
+    // Génération d'un nom de fichier unique pour éviter les écrasements
+    $nom_fichier_unique = uniqid('doc_', true) . '.' . $extension;
+    $chemin_complet = $dossier_destination . $nom_fichier_unique;
+
+    // Utilisation de la clé globale correcte de l'environnement PHP (tmp_name)
+    if (move_uploaded_file($_FILES['document']['tmp_name'], $chemin_complet)) {
+        $chemin_document = 'uploads/' . $nom_fichier_unique;
     }
 }
 
 try {
-    // Insertion SQL sécurisée via une requête préparée
+    // Préparation de la requête d'insertion respectant scrupuleusement les colonnes de la base de données
     $requete = $bdd->prepare("
-        INSERT INTO messages (nom, email, telephone, type_demande, vehicule_id, vehicule_nom, message, document_path) 
-        VALUES (:nom, :email, :telephone, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path)
+        INSERT INTO messages (utilisateur_id, nom, telephone, email, type_demande, vehicule_id, vehicule_nom, message, document_path, statut_dossier, cree_le) 
+        VALUES (:utilisateur_id, :nom, :telephone, :email, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path, 'En cours d\'étude', NOW())
     ");
-    
+
+    // Exécution sécurisée avec liaison de l'intégralité des paramètres
     $requete->execute([
-        'nom' => $nom,
-        'email' => $email,
-        'telephone' => $telephone,
-        'type_demande' => $type_demande,
-        'vehicule_id' => $vehicule_id,
-        'vehicule_nom' => $vehicule_nom,
-        'message' => $message,
-        'document_path' => $document_nom_final
+        'utilisateur_id' => $utilisateur_id,
+        'nom'            => $nom,
+        'telephone'      => $telephone,
+        'email'          => $email,
+        'type_demande'   => $type_demande,
+        'vehicule_id'    => $vehicule_id,
+        'vehicule_nom'   => !empty($vehicule_nom) ? $vehicule_nom : 'Non spécifié',
+        'message'        => $message,
+        'document_path'  => $chemin_document
     ]);
-    
-    echo json_encode(["succes" => "Votre demande a bien été transmise à notre service commercial."]);
+
+    echo json_encode(["succes" => "Votre demande de dossier a été enregistrée avec succès."]);
 
 } catch (PDOException $erreur) {
     http_response_code(500);
-    echo json_encode(["erreur" => "Erreur technique : impossible d'enregistrer la demande en base de données."]);
+    echo json_encode(["erreur" => "Erreur technique lors de l'enregistrement de votre demande."]);
 }
