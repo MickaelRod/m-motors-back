@@ -518,9 +518,12 @@
 
                     // Bouton de lecture de la pièce dématérialisée
                     let cellulePiece = '<span class="text-muted small">Aucune</span>';
-                    if (dossier.fichier_joint) {
-                        // Le dossier parent /back/ implique de remonter d'un cran pour atteindre l'upload de l'API
-                        cellulePiece = `<a href="api/uploads/${dossier.fichier_joint}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir le doc</a>`;
+                    if (dossier.document_path) {
+                        // Détection automatique de l'environnement (Local contre Production)
+                        const estLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                        // En prod, le fichier est dans /back/uploads/... alors qu'en local il est directement accessible via la racine du port 8001
+                        const prefixeChemin = estLocalhost ? '' : '/back';
+                        cellulePiece = `<a href="${prefixeChemin}${dossier.document_path}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir le doc</a>`;
                     }
 
                     // Style des badges de statut
@@ -561,7 +564,7 @@
             document.getElementById('detail-demandeur-email').textContent = `Email : ${dossier.client_email ? dossier.client_email : dossier.contact_email}`;
             document.getElementById('detail-demandeur-tel').textContent = `Tél : ${dossier.client_telephone ? dossier.client_telephone : dossier.contact_telephone}`;
             
-            document.getElementById('detail-contexte-type').textContent = `Démarche : ${dossier.type_demande ? dossier.type_demande.toUpperCase() : 'CONTACT GENERIQUE'}`;
+            document.getElementById('detail-contexte-type').textContent = `Démarche : ${dossier.type_demande ? dossier.type_demande.toUpperCase() : 'CONTACT GÉNÉRIQUE'}`;
             document.getElementById('detail-contexte-vehicule').textContent = dossier.vehicule_nom ? `Modèle visé : ${dossier.vehicule_nom} (ID: ${dossier.vehicule_id})` : 'Aucun véhicule lié';
             
             document.getElementById('detail-message-contenu').textContent = dossier.message || 'Aucun texte fourni.';
