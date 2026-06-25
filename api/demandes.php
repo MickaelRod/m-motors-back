@@ -14,7 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit(0);
 }
 
-// Démarrage de la session PHP sécurisée
+// --- ALIGNEMENT SUR LA SESSION EXCLUSIVE DU FRONT-OFFICE ---
+session_name('MMOTORS_FRONT_SESSION');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
