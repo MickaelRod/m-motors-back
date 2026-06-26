@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/validation.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_admin();
@@ -50,9 +51,11 @@ try {
         'id'               => $vehicule_id
     ]);
 
+    Logger::info('modifier_vehicule.php', "Véhicule #" . $vehicule_id . " modifié : " . $marque . " " . $modele . " (" . $type_commercial . ")");
     echo json_encode(["succes" => "La fiche du véhicule a été mise à jour avec succès."]);
 
 } catch (PDOException $erreur) {
+    Logger::error('modifier_vehicule.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique : modification impossible."]);
 }

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/vehicule.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_admin();
@@ -39,9 +40,11 @@ try {
     $requete_mise_a_jour = $bdd->prepare("UPDATE vehicules SET type_commercial = :nouveau_statut WHERE id = :id");
     $requete_mise_a_jour->execute(['nouveau_statut' => $nouveau_statut, 'id' => $vehicule_id]);
 
+    Logger::info('bascule_statut.php', "Véhicule #" . $vehicule_id . " basculé en : " . $nouveau_statut);
     echo json_encode(["succes" => "Statut modifié.", "nouveau_statut" => $nouveau_statut]);
 
 } catch (PDOException $erreur) {
+    Logger::error('bascule_statut.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique lors de la bascule du statut."]);
 }

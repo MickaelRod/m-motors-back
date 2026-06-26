@@ -4,6 +4,11 @@
  * Centralise les headers CORS, la configuration des sessions et les gardes d'accès.
  */
 
+// --- Détection d'environnement ---
+
+$_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+define('EST_LOCAL', $_host === 'localhost' || strpos($_host, '127.0.0.1') === 0 || strpos($_host, 'localhost:') === 0);
+
 // --- CORS et Content-Type ---
 
 /**

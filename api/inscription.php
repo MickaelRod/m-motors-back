@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/validation.php';
 require_once __DIR__ . '/../src/securite.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 verifier_methode('POST');
@@ -61,9 +62,12 @@ try {
         'mot_de_passe' => $mot_de_passe_hache
     ]);
 
+    $id_utilisateur = $bdd->lastInsertId();
+    Logger::info('inscription.php', "Nouveau compte #" . $id_utilisateur . " créé : " . $email);
     echo json_encode(["succes" => "Votre compte client a été créé avec succès."]);
 
 } catch (PDOException $erreur) {
+    Logger::error('inscription.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique : impossible de finaliser l'inscription."]);
 }

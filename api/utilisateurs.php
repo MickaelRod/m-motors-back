@@ -13,7 +13,7 @@ $methode = $_SERVER['REQUEST_METHOD'];
 // --- CAS 1 : LISTE DE TOUS LES UTILISATEURS (GET) ---
 if ($methode === 'GET') {
     try {
-        $requete = $bdd->prepare("SELECT id, nom, email, telephone, role, cree_le FROM utilisateurs ORDER BY id DESC");
+        $requete = $bdd->prepare("SELECT id, nom, email, telephone, role, alertes_email, cree_le FROM utilisateurs ORDER BY id DESC");
         $requete->execute();
         echo json_encode($requete->fetchAll(PDO::FETCH_ASSOC));
     } catch (PDOException $erreur) {
@@ -149,6 +149,32 @@ if ($methode === 'POST') {
         } catch (PDOException $erreur) {
             http_response_code(500);
             echo json_encode(["erreur" => "Erreur technique lors de la modification."]);
+        }
+        exit();
+    }
+
+    if ($action === 'niveau_alerte') {
+        $id            = isset($donnees['id'])            ? intval($donnees['id'])         : 0;
+        $alertes_email = isset($donnees['alertes_email']) ? trim($donnees['alertes_email']) : 'aucune';
+        $niveaux_valides = ['aucune', 'error', 'warning', 'info'];
+
+        if ($id <= 0) {
+            http_response_code(400);
+            echo json_encode(["erreur" => "Identifiant invalide."]);
+            exit();
+        }
+        if (!in_array($alertes_email, $niveaux_valides, true)) {
+            http_response_code(400);
+            echo json_encode(["erreur" => "Niveau d'alerte invalide."]);
+            exit();
+        }
+        try {
+            $requete = $bdd->prepare("UPDATE utilisateurs SET alertes_email = :alertes_email WHERE id = :id AND role = 'admin'");
+            $requete->execute(['alertes_email' => $alertes_email, 'id' => $id]);
+            echo json_encode(["succes" => "Niveau d'alerte mis à jour."]);
+        } catch (PDOException $erreur) {
+            http_response_code(500);
+            echo json_encode(["erreur" => "Erreur technique lors de la mise à jour."]);
         }
         exit();
     }

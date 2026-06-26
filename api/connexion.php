@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/securite.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_admin();
@@ -38,6 +39,8 @@ try {
         $_SESSION['utilisateur_telephone'] = $utilisateur['telephone'];
         $_SESSION['utilisateur_role']      = $utilisateur['role'];
 
+        Logger::info('connexion.php', "Connexion admin réussie : " . $email . " (#" . $utilisateur['id'] . ")");
+
         echo json_encode([
             "succes" => "Authentification réussie.",
             "utilisateur" => [
@@ -47,11 +50,13 @@ try {
             ]
         ]);
     } else {
+        Logger::warning('connexion.php', "Tentative de connexion admin échouée : " . $email . ($utilisateur ? " (#" . $utilisateur['id'] . ")" : ""));
         http_response_code(401);
         echo json_encode(["erreur" => "Identifiants de connexion incorrects."]);
     }
 
 } catch (PDOException $erreur) {
+    Logger::error('connexion.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique lors de l'authentification."]);
 }

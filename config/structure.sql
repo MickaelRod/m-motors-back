@@ -58,6 +58,9 @@ CREATE TABLE IF NOT EXISTS `utilisateurs` (
 -- Ajout du champ role avec la valeur 'client' par défaut (User Story 4 - Gestion des véhicules dans le Back-Office)
 ALTER TABLE utilisateurs ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'client' AFTER mot_de_passe;
 
+-- Ajout du champ alertes_email : niveau d'alerte e-mail par admin ('aucune', 'error', 'warning', 'info')
+ALTER TABLE utilisateurs ADD COLUMN alertes_email VARCHAR(10) NOT NULL DEFAULT 'aucune';
+
 -- Insertion du compte administrateur requis par l'énoncé (User Story 4 - Gestion des véhicules dans le Back-Office)
-INSERT INTO utilisateurs (nom, email, telephone, mot_de_passe, role) 
+INSERT INTO utilisateurs (nom, email, telephone, mot_de_passe, role)
 VALUES ('Administrateur', 'admin@m-motors.fr', '0102030405', '$2y$10$7vMhUjG19Zg.eBvF.qjZQuP3/63jX8w3U6Kfe5BwIscT9f0gA8fUe', 'admin');

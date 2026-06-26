@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/validation.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_admin();
@@ -42,12 +43,12 @@ try {
         'options_incluses' => ($type_commercial === 'location') ? $options_incluses : null
     ]);
 
-    echo json_encode([
-        "succes" => "Le nouveau véhicule a été ajouté avec succès au catalogue.",
-        "id"     => $bdd->lastInsertId()
-    ]);
+    $id_vehicule = $bdd->lastInsertId();
+    Logger::info('ajouter_vehicule.php', "Véhicule #" . $id_vehicule . " ajouté : " . $marque . " " . $modele . " (" . $type_commercial . ")");
+    echo json_encode(["succes" => "Le nouveau véhicule a été ajouté avec succès au catalogue.", "id" => $id_vehicule]);
 
 } catch (PDOException $erreur) {
+    Logger::error('ajouter_vehicule.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique : ajout du véhicule impossible."]);
 }
