@@ -6,3 +6,4 @@ config/db.php
 vendor/
 coverage/
 .phpunit.result.cache
+logs/*.log

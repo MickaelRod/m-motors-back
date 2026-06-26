@@ -32,3 +32,4 @@ jobs:
             phpunit.xml
             README.md
             CLAUDE.md
+            logs/**

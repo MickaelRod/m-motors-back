@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/dossier.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_admin();
@@ -35,6 +36,7 @@ if ($methode === 'GET') {
         echo json_encode($requete->fetchAll(PDO::FETCH_ASSOC));
 
     } catch (PDOException $erreur) {
+        Logger::error('dossiers.php', "Erreur PDO (GET) : " . $erreur->getMessage());
         http_response_code(500);
         echo json_encode(["erreur" => "Erreur lors de la récupération des dossiers."]);
     }
@@ -56,9 +58,11 @@ if ($methode === 'POST') {
     try {
         $requete_maj = $bdd->prepare("UPDATE messages SET statut_dossier = :statut WHERE id = :id");
         $requete_maj->execute(['statut' => $nouveau_statut, 'id' => $id_dossier]);
+        Logger::info('dossiers.php', "Statut de la demande #" . $id_dossier . " mis à jour : " . $nouveau_statut);
         echo json_encode(["succes" => "Statut du dossier mis à jour avec succès.", "statut_dossier" => $nouveau_statut]);
 
     } catch (PDOException $erreur) {
+        Logger::error('dossiers.php', "Erreur PDO (POST) : " . $erreur->getMessage());
         http_response_code(500);
         echo json_encode(["erreur" => "Erreur technique lors de la mise à jour du dossier."]);
     }

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../src/securite.php';
+require_once __DIR__ . '/../src/logger.php';
 
 initialiser_cors_json();
 demarrer_session_client();
@@ -48,7 +49,7 @@ if (isset($_FILES['document']) && $_FILES['document']['error'] === UPLOAD_ERR_OK
 try {
     $requete = $bdd->prepare("
         INSERT INTO messages (utilisateur_id, nom, telephone, email, type_demande, vehicule_id, vehicule_nom, message, document_path, statut_dossier, cree_le)
-        VALUES (:utilisateur_id, :nom, :telephone, :email, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path, 'En cours d\'étude', NOW())
+        VALUES (:utilisateur_id, :nom, :telephone, :email, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path, 'en_attente', NOW())
     ");
     $requete->execute([
         'utilisateur_id' => $utilisateur_id,
@@ -62,9 +63,12 @@ try {
         'document_path'  => $chemin_document
     ]);
 
+    $id_demande = $bdd->lastInsertId();
+    Logger::info('contact.php', "Nouvelle demande #" . $id_demande . " déposée par : " . $email . " (type : " . $type_demande . ")");
     echo json_encode(["succes" => "Votre demande de dossier a été enregistrée avec succès."]);
 
 } catch (PDOException $erreur) {
+    Logger::error('contact.php', "Erreur PDO : " . $erreur->getMessage());
     http_response_code(500);
     echo json_encode(["erreur" => "Erreur technique lors de l'enregistrement de votre demande."]);
 }

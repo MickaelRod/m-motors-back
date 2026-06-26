@@ -42,7 +42,8 @@
                     <div class="me-4">
                         <button class="btn btn-sm btn-outline-light active fw-bold me-2" id="btn-onglet-catalogue" onclick="basculerOnglet('catalogue')">Catalogue</button>
                         <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Dossiers clients</button>
-                        <button class="btn btn-sm btn-outline-light fw-bold" id="btn-onglet-utilisateurs" onclick="basculerOnglet('utilisateurs')">Utilisateurs</button>
+                        <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-utilisateurs" onclick="basculerOnglet('utilisateurs')">Utilisateurs</button>
+                        <button class="btn btn-sm btn-outline-warning fw-bold" id="btn-onglet-logs" onclick="basculerOnglet('logs')">Logs</button>
                     </div>
                     <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="deconnecterAdmin()">Déconnexion</button>
                 </div>
@@ -142,10 +143,45 @@
                                         <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="telephone" style="cursor:pointer">Téléphone ↕</th>
                                         <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="role" style="cursor:pointer">Rôle ↕</th>
                                         <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="cree_le" style="cursor:pointer">Inscription ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase text-center">Alertes e-mail</th>
                                         <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="liste-utilisateurs-admin"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="section-logs" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <h1 class="fw-bold">Journaux applicatifs</h1>
+                        <p class="text-muted mb-0">Consultez les derniers événements enregistrés par l'application (200 entrées maximum).</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" id="filtre-niveau-log" style="width:auto">
+                            <option value="">Tous les niveaux</option>
+                            <option value="INFO">INFO</option>
+                            <option value="WARNING">WARNING</option>
+                            <option value="ERROR">ERROR</option>
+                        </select>
+                        <button class="btn btn-outline-light btn-sm fw-bold" onclick="chargerLogs()">Actualiser</button>
+                    </div>
+                </div>
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="fw-bold text-uppercase" style="width:170px">Date</th>
+                                        <th class="fw-bold text-uppercase" style="width:100px">Niveau</th>
+                                        <th class="fw-bold text-uppercase" style="width:180px">Contexte</th>
+                                        <th class="fw-bold text-uppercase">Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste-logs"></tbody>
                             </table>
                         </div>
                     </div>
@@ -398,7 +434,7 @@
         });
 
         function basculerOnglet(onglet) {
-            const sections = ['catalogue', 'dossiers', 'utilisateurs'];
+            const sections = ['catalogue', 'dossiers', 'utilisateurs', 'logs'];
             sections.forEach(s => {
                 document.getElementById('section-' + s).classList.toggle('d-none', s !== onglet);
                 document.getElementById('btn-onglet-' + s).classList.toggle('active', s === onglet);
@@ -406,6 +442,7 @@
             if (onglet === 'catalogue')    chargerCatalogueAdmin();
             if (onglet === 'dossiers')     chargerDossiersAdmin();
             if (onglet === 'utilisateurs') chargerUtilisateursAdmin();
+            if (onglet === 'logs')         chargerLogs();
         }
 
         async function verifierAuthentification() {
@@ -858,6 +895,15 @@
                 const btnSupprimer = estSoiMeme
                     ? `<button class="btn btn-danger btn-sm disabled" title="Impossible de supprimer votre propre compte" aria-disabled="true">Supprimer</button>`
                     : `<button class="btn btn-danger btn-sm" onclick="supprimerUtilisateur(${u.id})">Supprimer</button>`;
+                const toggleAlerte = u.role === 'admin'
+                    ? `<select class="form-select form-select-sm" style="min-width:180px"
+                           onchange="changerNiveauAlerte(${u.id}, this.value)">
+                           <option value="aucune"  ${u.alertes_email === 'aucune'  ? 'selected' : ''}>Aucune alerte</option>
+                           <option value="error"   ${u.alertes_email === 'error'   ? 'selected' : ''}>ERROR seulement</option>
+                           <option value="warning" ${u.alertes_email === 'warning' ? 'selected' : ''}>WARNING et ERROR</option>
+                           <option value="info"    ${u.alertes_email === 'info'    ? 'selected' : ''}>INFO, WARNING et ERROR</option>
+                       </select>`
+                    : '<span class="text-muted small">—</span>';
                 ligne.innerHTML = `
                     <td class="small text-muted">${u.id}</td>
                     <td class="fw-bold small">${u.nom}</td>
@@ -865,6 +911,7 @@
                     <td class="small">${u.telephone || '—'}</td>
                     <td>${badgeRole}</td>
                     <td class="small">${dateInscription}</td>
+                    <td class="text-center">${toggleAlerte}</td>
                     <td class="text-end">
                         <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEditionUtilisateur(${u.id})">Modifier</button>
                         ${btnSupprimer}
@@ -965,6 +1012,58 @@
                     credentials: 'include'
                 });
                 if (reponse.ok) chargerUtilisateursAdmin();
+            } catch (erreur) {}
+        }
+
+        // --- PARTIE 4 : JOURNAUX APPLICATIFS ---
+        async function chargerLogs() {
+            const zoneTableau = document.getElementById('liste-logs');
+            const niveau = document.getElementById('filtre-niveau-log').value;
+            zoneTableau.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Chargement...</td></tr>';
+
+            try {
+                const url = 'api/alerting.php' + (niveau ? '?niveau=' + niveau : '');
+                const reponse = await fetch(url, { method: 'GET', credentials: 'include' });
+                if (!reponse.ok) throw new Error();
+
+                const resultat = await reponse.json();
+                const entrees  = resultat.entrees;
+                zoneTableau.innerHTML = '';
+
+                if (entrees.length === 0) {
+                    zoneTableau.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Aucune entrée de journal.</td></tr>';
+                    return;
+                }
+
+                const badgesNiveau = {
+                    'INFO':    '<span class="badge bg-info text-dark">INFO</span>',
+                    'WARNING': '<span class="badge bg-warning text-dark">WARNING</span>',
+                    'ERROR':   '<span class="badge bg-danger">ERROR</span>'
+                };
+
+                entrees.forEach(e => {
+                    const ligne = document.createElement('tr');
+                    ligne.innerHTML = `
+                        <td class="text-muted">${e.date}</td>
+                        <td>${badgesNiveau[e.niveau] || e.niveau}</td>
+                        <td class="text-muted">${e.contexte}</td>
+                        <td>${e.message}</td>
+                    `;
+                    zoneTableau.appendChild(ligne);
+                });
+            } catch (erreur) {
+                zoneTableau.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Impossible de charger les journaux.</td></tr>';
+            }
+        }
+
+        async function changerNiveauAlerte(idUtilisateur, niveau) {
+            try {
+                await fetch('api/utilisateurs.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                    body: JSON.stringify({ action: 'niveau_alerte', id: idUtilisateur, alertes_email: niveau }),
+                    credentials: 'include'
+                });
             } catch (erreur) {}
         }
 
