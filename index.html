@@ -414,7 +414,7 @@
                 if (reponse.ok) {
                     const session = await reponse.json();
                     if (session.connecte && session.utilisateur.role === 'admin') {
-                        afficherEspaceAdmin(session.utilisateur.nom);
+                        afficherEspaceAdmin(session.utilisateur.nom, session.utilisateur.id);
                         return;
                     }
                 }
@@ -424,7 +424,10 @@
             }
         }
 
-        function afficherEspaceAdmin(nomAdmin) {
+        let idAdminConnecte = null;
+
+        function afficherEspaceAdmin(nomAdmin, idAdmin) {
+            idAdminConnecte = idAdmin || null;
             document.getElementById('nom-admin').textContent = nomAdmin || '';
             document.getElementById('zone-connexion').classList.add('d-none');
             document.getElementById('zone-administration').classList.remove('d-none');
@@ -461,7 +464,7 @@
 
                     if (reponse.ok && resultat.utilisateur.role === 'admin') {
                         formulaire.reset();
-                        afficherEspaceAdmin(resultat.utilisateur.nom);
+                        afficherEspaceAdmin(resultat.utilisateur.nom, resultat.utilisateur.id);
                     } else {
                         zoneErreur.textContent = "Accès refusé. Identifiants incorrects ou droits insuffisants.";
                         zoneErreur.classList.remove('d-none');
@@ -851,6 +854,10 @@
                 const dateInscription = u.cree_le
                     ? new Date(u.cree_le).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
                     : '—';
+                const estSoiMeme = parseInt(u.id) === parseInt(idAdminConnecte);
+                const btnSupprimer = estSoiMeme
+                    ? `<button class="btn btn-danger btn-sm disabled" title="Impossible de supprimer votre propre compte" aria-disabled="true">Supprimer</button>`
+                    : `<button class="btn btn-danger btn-sm" onclick="supprimerUtilisateur(${u.id})">Supprimer</button>`;
                 ligne.innerHTML = `
                     <td class="small text-muted">${u.id}</td>
                     <td class="fw-bold small">${u.nom}</td>
@@ -860,7 +867,7 @@
                     <td class="small">${dateInscription}</td>
                     <td class="text-end">
                         <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEditionUtilisateur(${u.id})">Modifier</button>
-                        <button class="btn btn-danger btn-sm" onclick="supprimerUtilisateur(${u.id})">Supprimer</button>
+                        ${btnSupprimer}
                     </td>
                 `;
                 zoneTableau.appendChild(ligne);
