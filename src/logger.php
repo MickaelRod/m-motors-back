@@ -54,12 +54,11 @@ class Logger
 
     private static function alerterParEmail(string $niveau, string $contexte, string $message): void
     {
-        $fichier_config = __DIR__ . '/../config/db.php';
-        if (!file_exists($fichier_config)) {
+        // $bdd est définie dans le scope global par db.php — on y accède via global
+        global $bdd;
+        if (!isset($bdd)) {
             return;
         }
-
-        require_once $fichier_config;
 
         // Niveaux déclenchant l'alerte selon la préférence de chaque admin :
         // 'info'    → INFO + WARNING + ERROR
@@ -71,7 +70,6 @@ class Logger
             'error'   => ['ERROR'],
         ];
 
-        $destinataires = [];
         try {
             $requete = $bdd->prepare("SELECT email, alertes_email FROM utilisateurs WHERE role = 'admin' AND alertes_email != 'aucune'");
             $requete->execute();
@@ -80,6 +78,7 @@ class Logger
             return;
         }
 
+        $destinataires = [];
         foreach ($admins as $admin) {
             $preference = $admin['alertes_email'];
             if (isset($niveaux_couverts[$preference]) && in_array($niveau, $niveaux_couverts[$preference], true)) {
