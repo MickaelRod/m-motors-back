@@ -12,16 +12,16 @@
  */
 function initialiser_cors_json(): void
 {
-    $origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-    if ($origine !== '') {
-        header("Access-Control-Allow-Origin: " . $origine);
-    }
+    // Reflection de l'origine de la requête — requis pour que Allow-Credentials soit respecté
+    $origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost:8000';
+    header("Access-Control-Allow-Origin: " . $origine);
     header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
     header("Access-Control-Allow-Credentials: true");
     header("Content-Type: application/json; charset=UTF-8");
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(204);
         exit(0);
     }
 }
