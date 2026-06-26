@@ -41,7 +41,8 @@
                     <span class="text-white-50 small me-4" id="nom-admin"></span>
                     <div class="me-4">
                         <button class="btn btn-sm btn-outline-light active fw-bold me-2" id="btn-onglet-catalogue" onclick="basculerOnglet('catalogue')">Catalogue</button>
-                        <button class="btn btn-sm btn-outline-light fw-bold" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Dossiers clients</button>
+                        <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Dossiers clients</button>
+                        <button class="btn btn-sm btn-outline-light fw-bold" id="btn-onglet-utilisateurs" onclick="basculerOnglet('utilisateurs')">Utilisateurs</button>
                     </div>
                     <button class="btn btn-outline-danger btn-sm fw-bold px-3" onclick="deconnecterAdmin()">Déconnexion</button>
                 </div>
@@ -109,6 +110,42 @@
                                     </tr>
                                 </thead>
                                 <tbody id="liste-dossiers-admin"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-utilisateurs" class="d-none">
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div>
+                        <h1 class="fw-bold">Gestion des utilisateurs</h1>
+                        <p class="text-muted mb-0">Ajoutez, modifiez ou supprimez les comptes clients et administrateurs.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-success fw-bold px-4" data-bs-toggle="modal" data-bs-target="#modalAjoutUtilisateur">
+                            Ajouter un utilisateur
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="card-title fw-bold mb-4">Comptes enregistrés</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="id" style="cursor:pointer">ID ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="nom" style="cursor:pointer">Nom ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="email" style="cursor:pointer">E-mail ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="telephone" style="cursor:pointer">Téléphone ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="role" style="cursor:pointer">Rôle ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="utilisateurs" data-col="cree_le" style="cursor:pointer">Inscription ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="liste-utilisateurs-admin"></tbody>
                             </table>
                         </div>
                     </div>
@@ -244,38 +281,131 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalAjoutUtilisateur" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Ajouter un utilisateur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form id="formulaire-ajout-utilisateur">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label for="add-user-nom" class="form-label small fw-bold">Nom complet</label>
+                            <input type="text" class="form-control" id="add-user-nom" required placeholder="ex: Jean Dupont">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="add-user-email" class="form-label small fw-bold">Adresse e-mail</label>
+                            <input type="email" class="form-control" id="add-user-email" required placeholder="ex: jean@example.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="add-user-telephone" class="form-label small fw-bold">Téléphone</label>
+                            <input type="text" class="form-control" id="add-user-telephone" required placeholder="ex: 06 12 34 56 78">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="add-user-role" class="form-label small fw-bold">Rôle</label>
+                            <select class="form-select" id="add-user-role" required>
+                                <option value="client" selected>Utilisateur</option>
+                                <option value="admin">Administrateur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="add-user-mdp" class="form-label small fw-bold">Mot de passe</label>
+                            <input type="password" class="form-control" id="add-user-mdp" required placeholder="8 caractères min.">
+                        </div>
+                        <div id="add-user-erreur" class="col-12 d-none">
+                            <div class="alert alert-danger small mb-0"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success btn-sm px-4 fw-bold">Créer le compte</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalModificationUtilisateur" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Modifier le compte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <form id="formulaire-modification-utilisateur">
+                    <div class="modal-body row g-3">
+                        <input type="hidden" id="edit-user-id">
+                        <div class="col-md-6">
+                            <label for="edit-user-nom" class="form-label small fw-bold">Nom complet</label>
+                            <input type="text" class="form-control" id="edit-user-nom" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit-user-email" class="form-label small fw-bold">Adresse e-mail</label>
+                            <input type="email" class="form-control" id="edit-user-email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit-user-telephone" class="form-label small fw-bold">Téléphone</label>
+                            <input type="text" class="form-control" id="edit-user-telephone" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit-user-role" class="form-label small fw-bold">Rôle</label>
+                            <select class="form-select" id="edit-user-role" required>
+                                <option value="client">Utilisateur</option>
+                                <option value="admin">Administrateur</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit-user-mdp" class="form-label small fw-bold">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="edit-user-mdp" placeholder="Laisser vide = inchangé">
+                        </div>
+                        <div id="edit-user-erreur" class="col-12 d-none">
+                            <div class="alert alert-danger small mb-0"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary btn-sm px-4">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let listeVehiculesLocaux = [];
-        let listeDossiersLocaux = [];
-        let modalEditionInstance = null;
-        let modalAjoutInstance = null;
-        let modalDetailsDossierInstance = null;
+        let listeVehiculesLocaux    = [];
+        let listeDossiersLocaux     = [];
+        let listeUtilisateursLocaux = [];
+        let modalEditionInstance          = null;
+        let modalAjoutInstance            = null;
+        let modalDetailsDossierInstance   = null;
+        let modalAjoutUtilisateurInstance = null;
+        let modalEditUtilisateurInstance  = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            modalEditionInstance = new bootstrap.Modal(document.getElementById('modalModification'));
-            modalAjoutInstance = new bootstrap.Modal(document.getElementById('modalAjout'));
-            modalDetailsDossierInstance = new bootstrap.Modal(document.getElementById('modalDetailsDossier'));
+            modalEditionInstance          = new bootstrap.Modal(document.getElementById('modalModification'));
+            modalAjoutInstance            = new bootstrap.Modal(document.getElementById('modalAjout'));
+            modalDetailsDossierInstance   = new bootstrap.Modal(document.getElementById('modalDetailsDossier'));
+            modalAjoutUtilisateurInstance = new bootstrap.Modal(document.getElementById('modalAjoutUtilisateur'));
+            modalEditUtilisateurInstance  = new bootstrap.Modal(document.getElementById('modalModificationUtilisateur'));
             verifierAuthentification();
             configurerFormulaireConnexion();
             configurerFormulaireAjout();
             configurerFormulaireModification();
+            configurerFormulaireAjoutUtilisateur();
+            configurerFormulaireModificationUtilisateur();
         });
 
         function basculerOnglet(onglet) {
-            if (onglet === 'catalogue') {
-                document.getElementById('section-catalogue').classList.remove('d-none');
-                document.getElementById('section-dossiers').classList.add('d-none');
-                document.getElementById('btn-onglet-catalogue').classList.add('active');
-                document.getElementById('btn-onglet-dossiers').classList.remove('active');
-                chargerCatalogueAdmin();
-            } else {
-                document.getElementById('section-catalogue').classList.add('d-none');
-                document.getElementById('section-dossiers').classList.remove('d-none');
-                document.getElementById('btn-onglet-catalogue').classList.remove('active');
-                document.getElementById('btn-onglet-dossiers').classList.add('active');
-                chargerDossiersAdmin();
-            }
+            const sections = ['catalogue', 'dossiers', 'utilisateurs'];
+            sections.forEach(s => {
+                document.getElementById('section-' + s).classList.toggle('d-none', s !== onglet);
+                document.getElementById('btn-onglet-' + s).classList.toggle('active', s === onglet);
+            });
+            if (onglet === 'catalogue')    chargerCatalogueAdmin();
+            if (onglet === 'dossiers')     chargerDossiersAdmin();
+            if (onglet === 'utilisateurs') chargerUtilisateursAdmin();
         }
 
         async function verifierAuthentification() {
@@ -581,7 +711,7 @@
         }
 
         // --- LOGIQUE DE TRI DES TABLEAUX ---
-        const etatTri = { vehicules: { col: null, asc: true }, dossiers: { col: null, asc: true } };
+        const etatTri = { vehicules: { col: null, asc: true }, dossiers: { col: null, asc: true }, utilisateurs: { col: null, asc: true } };
 
         document.addEventListener('click', (e) => {
             const th = e.target.closest('.tri-col');
@@ -614,9 +744,12 @@
             if (table === 'vehicules') {
                 listeVehiculesLocaux = [...listeVehiculesLocaux].sort(comparer);
                 afficherVehiculesAdminTries();
-            } else {
+            } else if (table === 'dossiers') {
                 listeDossiersLocaux = [...listeDossiersLocaux].sort(comparer);
                 afficherDossiersAdminTries();
+            } else {
+                listeUtilisateursLocaux = [...listeUtilisateursLocaux].sort(comparer);
+                afficherUtilisateursAdminTries();
             }
 
             // Mise à jour des indicateurs de tri dans les en-têtes
@@ -688,6 +821,144 @@
                 `;
                 zoneTableau.appendChild(ligne);
             });
+        }
+
+        // --- PARTIE 3 : LOGIQUE GESTION UTILISATEURS ---
+        async function chargerUtilisateursAdmin() {
+            const zoneTableau = document.getElementById('liste-utilisateurs-admin');
+            try {
+                const reponse = await fetch('api/utilisateurs.php', { method: 'GET', credentials: 'include' });
+                if (!reponse.ok) throw new Error();
+                listeUtilisateursLocaux = await reponse.json();
+                afficherUtilisateursAdminTries();
+            } catch (erreur) {
+                zoneTableau.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Impossible de charger les utilisateurs.</td></tr>';
+            }
+        }
+
+        function afficherUtilisateursAdminTries() {
+            const zoneTableau = document.getElementById('liste-utilisateurs-admin');
+            zoneTableau.innerHTML = '';
+            if (listeUtilisateursLocaux.length === 0) {
+                zoneTableau.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Aucun utilisateur enregistré.</td></tr>';
+                return;
+            }
+            listeUtilisateursLocaux.forEach(u => {
+                const ligne = document.createElement('tr');
+                const badgeRole = u.role === 'admin'
+                    ? '<span class="badge bg-dark">Administrateur</span>'
+                    : '<span class="badge bg-secondary">Utilisateur</span>';
+                const dateInscription = u.cree_le
+                    ? new Date(u.cree_le).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : '—';
+                ligne.innerHTML = `
+                    <td class="small text-muted">${u.id}</td>
+                    <td class="fw-bold small">${u.nom}</td>
+                    <td class="small">${u.email}</td>
+                    <td class="small">${u.telephone || '—'}</td>
+                    <td>${badgeRole}</td>
+                    <td class="small">${dateInscription}</td>
+                    <td class="text-end">
+                        <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEditionUtilisateur(${u.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="supprimerUtilisateur(${u.id})">Supprimer</button>
+                    </td>
+                `;
+                zoneTableau.appendChild(ligne);
+            });
+        }
+
+        function configurerFormulaireAjoutUtilisateur() {
+            const formulaire = document.getElementById('formulaire-ajout-utilisateur');
+            formulaire.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const zoneErreur = document.getElementById('add-user-erreur');
+                zoneErreur.classList.add('d-none');
+                const donnees = {
+                    action: 'ajouter',
+                    nom:          document.getElementById('add-user-nom').value,
+                    email:        document.getElementById('add-user-email').value,
+                    telephone:    document.getElementById('add-user-telephone').value,
+                    role:         document.getElementById('add-user-role').value,
+                    mot_de_passe: document.getElementById('add-user-mdp').value
+                };
+                try {
+                    const reponse = await fetch('api/utilisateurs.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(donnees),
+                        credentials: 'include'
+                    });
+                    const resultat = await reponse.json();
+                    if (reponse.ok) {
+                        formulaire.reset();
+                        modalAjoutUtilisateurInstance.hide();
+                        chargerUtilisateursAdmin();
+                    } else {
+                        zoneErreur.querySelector('.alert').textContent = resultat.erreur || "Erreur lors de la création.";
+                        zoneErreur.classList.remove('d-none');
+                    }
+                } catch (erreur) {}
+            });
+        }
+
+        function ouvrirFormulaireEditionUtilisateur(idUtilisateur) {
+            const u = listeUtilisateursLocaux.find(x => parseInt(x.id) === idUtilisateur);
+            if (!u) return;
+            document.getElementById('edit-user-id').value        = u.id;
+            document.getElementById('edit-user-nom').value       = u.nom;
+            document.getElementById('edit-user-email').value     = u.email;
+            document.getElementById('edit-user-telephone').value = u.telephone || '';
+            document.getElementById('edit-user-role').value      = u.role;
+            document.getElementById('edit-user-mdp').value       = '';
+            document.getElementById('edit-user-erreur').classList.add('d-none');
+            modalEditUtilisateurInstance.show();
+        }
+
+        function configurerFormulaireModificationUtilisateur() {
+            const formulaire = document.getElementById('formulaire-modification-utilisateur');
+            formulaire.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const zoneErreur = document.getElementById('edit-user-erreur');
+                zoneErreur.classList.add('d-none');
+                const donnees = {
+                    action:       'modifier',
+                    id:           document.getElementById('edit-user-id').value,
+                    nom:          document.getElementById('edit-user-nom').value,
+                    email:        document.getElementById('edit-user-email').value,
+                    telephone:    document.getElementById('edit-user-telephone').value,
+                    role:         document.getElementById('edit-user-role').value,
+                    mot_de_passe: document.getElementById('edit-user-mdp').value
+                };
+                try {
+                    const reponse = await fetch('api/utilisateurs.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                        body: JSON.stringify(donnees),
+                        credentials: 'include'
+                    });
+                    const resultat = await reponse.json();
+                    if (reponse.ok) {
+                        modalEditUtilisateurInstance.hide();
+                        chargerUtilisateursAdmin();
+                    } else {
+                        zoneErreur.querySelector('.alert').textContent = resultat.erreur || "Erreur lors de la modification.";
+                        zoneErreur.classList.remove('d-none');
+                    }
+                } catch (erreur) {}
+            });
+        }
+
+        async function supprimerUtilisateur(idUtilisateur) {
+            if (!confirm("Confirmez-vous la suppression de cet utilisateur ?")) return;
+            try {
+                const reponse = await fetch('api/utilisateurs.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                    body: JSON.stringify({ action: 'supprimer', id: idUtilisateur }),
+                    credentials: 'include'
+                });
+                if (reponse.ok) chargerUtilisateursAdmin();
+            } catch (erreur) {}
         }
 
         async function modifierStatutDossier(idDossier, nouveauStatut) {
