@@ -40,7 +40,7 @@ try {
         'type_commercial'  => $type_commercial,
         'prix_achat'       => $prix_achat,
         'prix_location'    => $prix_location,
-        'options_incluses' => ($type_commercial === 'location') ? $options_incluses : null
+        'options_incluses' => $options_incluses
     ]);
 
     $id_vehicule = $bdd->lastInsertId();
