@@ -24,11 +24,12 @@ if ($methode === 'GET') {
                     m.type_demande,
                     m.vehicule_id,
                     m.vehicule_nom,
-                    u.nom AS client_nom,
-                    u.email AS client_email,
-                    u.telephone AS client_telephone
+                    COALESCE(u1.nom,   u2.nom)       AS client_nom,
+                    COALESCE(u1.email, u2.email)     AS client_email,
+                    COALESCE(u1.telephone, u2.telephone) AS client_telephone
                 FROM messages m
-                LEFT JOIN utilisateurs u ON m.utilisateur_id = u.id
+                LEFT JOIN utilisateurs u1 ON m.utilisateur_id = u1.id
+                LEFT JOIN utilisateurs u2 ON u1.id IS NULL AND m.email = u2.email
                 ORDER BY m.id DESC";
 
         $requete = $bdd->prepare($sql);
