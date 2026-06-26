@@ -665,7 +665,7 @@
 
                     ligne.innerHTML = `
                         <td class="small text-muted">${dossier.id}</td>
-                        <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span></td>
+                        <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span><br>${dossier.client_nom ? '<span class="badge bg-success" style="font-size:.65rem">Compte client</span>' : '<span class="badge bg-secondary" style="font-size:.65rem">Visiteur anonyme</span>'}</td>
                         <td><span class="badge bg-secondary">${libelleType}</span></td>
                         <td class="small">${vehiculeAffichage}</td>
                         <td>${cellulePiece}</td>
