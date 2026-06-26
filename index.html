@@ -592,12 +592,20 @@
             etat.asc = (etat.col === col) ? !etat.asc : true;
             etat.col = col;
 
+            const estVide = v => v === null || v === undefined || v === '' || v === 'Non spécifié';
+
             const comparer = (a, b) => {
-                const va = (a[col] ?? '').toString().toLowerCase();
-                const vb = (b[col] ?? '').toString().toLowerCase();
-                const num_a = parseFloat(a[col]);
-                const num_b = parseFloat(b[col]);
+                const va_brut = a[col];
+                const vb_brut = b[col];
+                // Les valeurs vides sont toujours reléguées en fin de liste
+                if (estVide(va_brut) && estVide(vb_brut)) return 0;
+                if (estVide(va_brut)) return 1;
+                if (estVide(vb_brut)) return -1;
+                const num_a = parseFloat(va_brut);
+                const num_b = parseFloat(vb_brut);
                 if (!isNaN(num_a) && !isNaN(num_b)) return etat.asc ? num_a - num_b : num_b - num_a;
+                const va = va_brut.toString().toLowerCase();
+                const vb = vb_brut.toString().toLowerCase();
                 return etat.asc ? va.localeCompare(vb, 'fr') : vb.localeCompare(va, 'fr');
             };
 
