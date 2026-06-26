@@ -974,15 +974,18 @@
                 e.preventDefault();
                 const zoneErreur = document.getElementById('edit-user-erreur');
                 zoneErreur.classList.add('d-none');
+                const mdp = document.getElementById('edit-user-mdp').value.trim();
                 const donnees = {
-                    action:       'modifier',
-                    id:           document.getElementById('edit-user-id').value,
-                    nom:          document.getElementById('edit-user-nom').value,
-                    email:        document.getElementById('edit-user-email').value,
-                    telephone:    document.getElementById('edit-user-telephone').value,
-                    role:         document.getElementById('edit-user-role').value,
-                    mot_de_passe: document.getElementById('edit-user-mdp').value
+                    action:    'modifier',
+                    id:        document.getElementById('edit-user-id').value,
+                    nom:       document.getElementById('edit-user-nom').value,
+                    email:     document.getElementById('edit-user-email').value,
+                    telephone: document.getElementById('edit-user-telephone').value,
+                    role:      document.getElementById('edit-user-role').value,
                 };
+                if (mdp.length > 0) {
+                    donnees.mot_de_passe = mdp;
+                }
                 try {
                     const reponse = await fetch('api/utilisateurs.php', {
                         method: 'POST',
