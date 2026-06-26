@@ -21,3 +21,14 @@ jobs:
           password: ${{ secrets.FTP_MOT_DE_PASSE }}
           local-dir: ./
           server-dir: /public_html/back/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            vendor/**
+            coverage/**
+            tests/**
+            composer.json
+            composer.lock
+            phpunit.xml
+            README.md
+            CLAUDE.md
