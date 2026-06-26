@@ -1,4 +1,4 @@
-# M-Motors — Back-Office & API REST
+# M-Motors : Back-Office & API REST
 
 Application de gestion back-office pour une entreprise fictive de ventes et de location de véhicules (M-Motors). Expose une API PHP REST utilisée par le front-office client ainsi qu'une interface d'administration monopage.
 
@@ -9,7 +9,7 @@ Application de gestion back-office pour une entreprise fictive de ventes et de l
 - **Gestion des utilisateurs** : création, modification, suppression ; rôles `client` / `admin`
 - **Journalisation applicative** : classe `Logger` (INFO / WARNING / ERROR) écrivant dans `logs/app.log`, consultable depuis l'onglet Logs du back-office
 - **Alerting e-mail par admin** : chaque administrateur configure son niveau d'alerte (aucune / ERROR / WARNING+ERROR / INFO+WARNING+ERROR) ; les e-mails sont envoyés automatiquement sur les événements correspondants (désactivé en environnement local)
-- **Tests unitaires** : 4 suites PHPUnit 10 couvrant les classes de service métier (`Validation`, `Securite`, `Vehicule`, `Dossier`) — couverture > 95 %
+- **Tests unitaires** : 4 suites PHPUnit 10 couvrant les classes de service métier (`Validation`, `Securite`, `Vehicule`, `Dossier`)
 
 ## Stack technique
 
