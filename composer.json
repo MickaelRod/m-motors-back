@@ -1,0 +1,9 @@
+{
+    "name": "m-motors/back",
+    "require-dev": {
+        "phpunit/phpunit": "^10"
+    },
+    "autoload": {
+        "classmap": ["src/"]
+    }
+}
