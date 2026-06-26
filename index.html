@@ -38,6 +38,7 @@
             <div class="container">
                 <a class="navbar-brand fw-bold" href="index.html">M-MOTORS | Administration</a>
                 <div class="d-flex align-items-center">
+                    <span class="text-white-50 small me-4" id="nom-admin"></span>
                     <div class="me-4">
                         <button class="btn btn-sm btn-outline-light active fw-bold me-2" id="btn-onglet-catalogue" onclick="basculerOnglet('catalogue')">Catalogue</button>
                         <button class="btn btn-sm btn-outline-light fw-bold" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Dossiers clients</button>
@@ -283,7 +284,7 @@
                 if (reponse.ok) {
                     const session = await reponse.json();
                     if (session.connecte && session.utilisateur.role === 'admin') {
-                        afficherEspaceAdmin();
+                        afficherEspaceAdmin(session.utilisateur.nom);
                         return;
                     }
                 }
@@ -293,7 +294,8 @@
             }
         }
 
-        function afficherEspaceAdmin() {
+        function afficherEspaceAdmin(nomAdmin) {
+            document.getElementById('nom-admin').textContent = nomAdmin || '';
             document.getElementById('zone-connexion').classList.add('d-none');
             document.getElementById('zone-administration').classList.remove('d-none');
             basculerOnglet('catalogue');
@@ -329,7 +331,7 @@
 
                     if (reponse.ok && resultat.utilisateur.role === 'admin') {
                         formulaire.reset();
-                        afficherEspaceAdmin();
+                        afficherEspaceAdmin(resultat.utilisateur.nom);
                     } else {
                         zoneErreur.textContent = "Accès refusé. Identifiants incorrects ou droits insuffisants.";
                         zoneErreur.classList.remove('d-none');
