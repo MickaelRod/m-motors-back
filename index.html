@@ -408,7 +408,8 @@
                     const reponse = await fetch('api/ajouter_vehicule.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-                        body: JSON.stringify(donneesVehicule)
+                        body: JSON.stringify(donneesVehicule),
+                        credentials: 'include'
                     });
                     if (reponse.ok) {
                         formulaire.reset();
@@ -419,7 +420,7 @@
             });
         }
 
-        function abrirFormulaireEdition(idVehicule) {
+        function ouvrirFormulaireEdition(idVehicule) {
             const vehicule = listeVehiculesLocaux.find(v => parseInt(v.id) === idVehicule);
             if (!vehicule) return;
 
@@ -452,7 +453,8 @@
                     const reponse = await fetch('api/modifier_vehicule.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-                        body: JSON.stringify(donneesModification)
+                        body: JSON.stringify(donneesModification),
+                        credentials: 'include'
                     });
                     if (reponse.ok) {
                         modalEditionInstance.hide();
@@ -467,7 +469,8 @@
                 const reponse = await fetch('api/bascule_statut.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-                    body: JSON.stringify({ id: idVehicule })
+                    body: JSON.stringify({ id: idVehicule }),
+                    credentials: 'include'
                 });
                 if (reponse.ok) chargerCatalogueAdmin();
             } catch (erreur) {}
@@ -479,7 +482,8 @@
                 const reponse = await fetch('api/supprimer_vehicule.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-                    body: JSON.stringify({ id: idVehicule })
+                    body: JSON.stringify({ id: idVehicule }),
+                    credentials: 'include'
                 });
                 if (reponse.ok) chargerCatalogueAdmin();
             } catch (erreur) {}

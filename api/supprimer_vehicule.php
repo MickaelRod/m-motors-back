@@ -1,5 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:8000");
+$origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost:8001';
+header("Access-Control-Allow-Origin: " . $origine);
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Credentials: true");
@@ -12,6 +13,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["erreur" => "Méthode non autorisée. POST attendu."]);
+    exit();
+}
+
+// Vérification de la session administrateur
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Lax');
+session_name('MMOTORS_BACK_SESSION');
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($_SESSION['utilisateur_role']) || $_SESSION['utilisateur_role'] !== 'admin') {
+    http_response_code(403);
+    echo json_encode(["erreur" => "Accès interdit. Droits d'administration requis."]);
     exit();
 }
 
