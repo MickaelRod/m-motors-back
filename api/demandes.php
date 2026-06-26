@@ -1,57 +1,26 @@
 <?php
-// Configuration stricte des cookies de session de manière globale
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_use_only_cookies', 1);
-
-// Autorise le Front-Office local à interroger cette API avec le support des cookies
-header("Access-Control-Allow-Origin: http://localhost:8000");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json; charset=UTF-8");
-
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
-// --- ALIGNEMENT SUR LA SESSION EXCLUSIVE DU FRONT-OFFICE ---
-session_name('MMOTORS_FRONT_SESSION');
-
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Vérification de l'authentification de l'utilisateur
-if (!isset($_SESSION['utilisateur_id'])) {
-    http_response_code(401);
-    echo json_encode(["erreur" => "Accès non autorisé. Veuillez vous connecter."]);
-    exit();
-}
-
-// Inclusion de la connexion à la base de données
+require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
 
-$utilisateur_id = $_SESSION['utilisateur_id'];
+initialiser_cors_json();
+demarrer_session_client();
+exiger_client();
+
+$utilisateur_id    = $_SESSION['utilisateur_id'];
+$utilisateur_email = $_SESSION['utilisateur_email'];
 
 try {
-    // Récupération de l'adresse e-mail stockée en session pour la mise en correspondance
-    $utilisateur_email = $_SESSION['utilisateur_email'];
-    // Récupération des demandes associées par identifiant unique ou par adresse e-mail
-    // Le tri est effectué de la plus récente à la plus ancienne
     $requete = $bdd->prepare("
-        SELECT id, type_demande, vehicule_nom, cree_le, statut_dossier AS statut 
-        FROM messages 
-        WHERE utilisateur_id = :utilisateur_id OR email = :utilisateur_email 
+        SELECT id, type_demande, vehicule_nom, cree_le, statut_dossier AS statut
+        FROM messages
+        WHERE utilisateur_id = :utilisateur_id OR email = :utilisateur_email
         ORDER BY cree_le DESC
     ");
     $requete->execute([
         'utilisateur_id'    => $utilisateur_id,
         'utilisateur_email' => $utilisateur_email
     ]);
-    $demandes = $requete->fetchAll(PDO::FETCH_ASSOC);
-
-    // Retourne la liste des demandes, même si elle est vide
-    echo json_encode(["demandes" => $demandes]);
+    echo json_encode(["demandes" => $requete->fetchAll(PDO::FETCH_ASSOC)]);
 
 } catch (PDOException $erreur) {
     http_response_code(500);

@@ -1,28 +1,16 @@
 <?php
-$origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost:8000';
-header("Access-Control-Allow-Origin: " . $origine);
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json; charset=UTF-8");
+require_once __DIR__ . '/../config/bootstrap.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
+initialiser_cors_json();
+demarrer_session_client();
 
-session_name('MMOTORS_FRONT_SESSION');
-
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-$_SESSION = array();
+$_SESSION = [];
 
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
         $params["path"], $params["domain"],
-        $params["secure"], $params["is_httponly"]
+        $params["secure"], $params["httponly"]
     );
 }
 

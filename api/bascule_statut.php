@@ -1,39 +1,19 @@
 <?php
-$origine = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : 'http://localhost:8001';
-header("Access-Control-Allow-Origin: " . $origine);
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json; charset=UTF-8");
-
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    exit(0);
-}
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    exit();
-}
-
-session_name('MMOTORS_BACK_SESSION');
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Sécurité : Interdiction si l'utilisateur n'est pas connecté ou n'est pas admin
-if (!isset($_SESSION['utilisateur_role']) || $_SESSION['utilisateur_role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(["erreur" => "Accès interdit."]);
-    exit();
-}
-
+require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../src/vehicule.php';
 
-$donnees = json_decode(file_get_contents("php://input"), true);
+initialiser_cors_json();
+demarrer_session_admin();
+exiger_admin();
+verifier_methode('POST');
+
+$donnees     = lire_json_entrant();
 $vehicule_id = isset($donnees['id']) ? intval($donnees['id']) : 0;
 
 if ($vehicule_id <= 0) {
     http_response_code(400);
+    echo json_encode(["erreur" => "L'identifiant du véhicule est obligatoire."]);
     exit();
 }
 
@@ -44,15 +24,24 @@ try {
 
     if (!$vehicule) {
         http_response_code(404);
+        echo json_encode(["erreur" => "Véhicule introuvable."]);
         exit();
     }
 
-    $nouveau_statut = ($vehicule['type_commercial'] === 'achat') ? 'location' : 'achat';
+    $nouveau_statut = Vehicule::basculerType($vehicule['type_commercial']);
+
+    if ($nouveau_statut === null) {
+        http_response_code(400);
+        echo json_encode(["erreur" => "Type commercial du véhicule non reconnu."]);
+        exit();
+    }
 
     $requete_mise_a_jour = $bdd->prepare("UPDATE vehicules SET type_commercial = :nouveau_statut WHERE id = :id");
     $requete_mise_a_jour->execute(['nouveau_statut' => $nouveau_statut, 'id' => $vehicule_id]);
 
     echo json_encode(["succes" => "Statut modifié.", "nouveau_statut" => $nouveau_statut]);
+
 } catch (PDOException $erreur) {
     http_response_code(500);
+    echo json_encode(["erreur" => "Erreur technique lors de la bascule du statut."]);
 }
