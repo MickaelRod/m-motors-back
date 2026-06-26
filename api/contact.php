@@ -48,7 +48,7 @@ if (isset($_FILES['document']) && $_FILES['document']['error'] === UPLOAD_ERR_OK
 try {
     $requete = $bdd->prepare("
         INSERT INTO messages (utilisateur_id, nom, telephone, email, type_demande, vehicule_id, vehicule_nom, message, document_path, statut_dossier, cree_le)
-        VALUES (:utilisateur_id, :nom, :telephone, :email, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path, 'En cours d\'étude', NOW())
+        VALUES (:utilisateur_id, :nom, :telephone, :email, :type_demande, :vehicule_id, :vehicule_nom, :message, :document_path, 'en_attente', NOW())
     ");
     $requete->execute([
         'utilisateur_id' => $utilisateur_id,
