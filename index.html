@@ -69,11 +69,12 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th scope="col" class="small fw-bold text-uppercase">ID</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Marque</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Modèle</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Statut commercial</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Prix / Mensualité</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="id" style="cursor:pointer">ID ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="marque" style="cursor:pointer">Marque ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="modele" style="cursor:pointer">Modèle ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="type_commercial" style="cursor:pointer">Statut ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="prix_achat" style="cursor:pointer">Prix achat ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="vehicules" data-col="prix_location" style="cursor:pointer">Mensualité LLD ↕</th>
                                         <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -97,11 +98,12 @@
                             <table class="table table-hover align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th scope="col" class="small fw-bold text-uppercase">ID</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Demandeur</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Type & Véhicule</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="dossiers" data-col="id" style="cursor:pointer">ID ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="dossiers" data-col="contact_nom" style="cursor:pointer">Demandeur ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="dossiers" data-col="type_demande" style="cursor:pointer">Type de demande ↕</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="dossiers" data-col="vehicule_nom" style="cursor:pointer">Véhicule concerné ↕</th>
                                         <th scope="col" class="small fw-bold text-uppercase">Pièce jointe</th>
-                                        <th scope="col" class="small fw-bold text-uppercase">Statut demandes</th>
+                                        <th scope="col" class="small fw-bold text-uppercase tri-col" data-table="dossiers" data-col="statut_dossier" style="cursor:pointer">Statut ↕</th>
                                         <th scope="col" class="small fw-bold text-uppercase text-end">Actions</th>
                                     </tr>
                                 </thead>
@@ -359,26 +361,25 @@
                 zoneTableau.innerHTML = '';
 
                 if (listeVehiculesLocaux.length === 0) {
-                    zoneTableau.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucun véhicule enregistré.</td></tr>';
+                    zoneTableau.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Aucun véhicule enregistré.</td></tr>';
                     return;
                 }
 
                 listeVehiculesLocaux.forEach(vehicule => {
                     const ligne = document.createElement('tr');
-                    let badgeType = (vehicule.type_commercial === 'achat') 
-                        ? '<span class="badge bg-success">Achat d\'occasion</span>' 
+                    const badgeType = (vehicule.type_commercial === 'achat')
+                        ? '<span class="badge bg-success">Achat d\'occasion</span>'
                         : '<span class="badge bg-info">Location longue durée</span>';
-
-                    let textePrix = (vehicule.type_commercial === 'achat') 
-                        ? `${vehicule.prix_achat || 0} €` 
-                        : `${vehicule.prix_location || 0} € / mois`;
+                    const prixAchat    = vehicule.prix_achat    ? `${vehicule.prix_achat} €`          : '<span class="text-muted small">—</span>';
+                    const prixLocation = vehicule.prix_location ? `${vehicule.prix_location} € / mois` : '<span class="text-muted small">—</span>';
 
                     ligne.innerHTML = `
                         <td class="small text-muted">${vehicule.id}</td>
                         <td class="fw-bold small">${vehicule.marque}</td>
                         <td class="small">${vehicule.modele}</td>
                         <td>${badgeType}</td>
-                        <td class="fw-semibold small">${textePrix}</td>
+                        <td class="small">${prixAchat}</td>
+                        <td class="small">${prixLocation}</td>
                         <td class="text-end">
                             <button class="btn btn-outline-primary btn-sm me-1" onclick="basculerStatutVehicule(${vehicule.id})">Bascule</button>
                             <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEdition(${vehicule.id})">Modifier</button>
@@ -501,55 +502,37 @@
                 zoneTableau.innerHTML = '';
 
                 if (listeDossiersLocaux.length === 0) {
-                    zoneTableau.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Aucun dossier client soumis.</td></tr>';
+                    zoneTableau.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Aucun dossier client soumis.</td></tr>';
                     return;
                 }
 
                 listeDossiersLocaux.forEach(dossier => {
                     const ligne = document.createElement('tr');
-                    
-                    let nomAffichage = dossier.client_nom ? dossier.client_nom : dossier.contact_nom;
-                    let emailAffichage = dossier.client_email ? dossier.client_email : dossier.contact_email;
 
-                    // Traduction propre des types de demandes
-                    let libelleType = dossier.type_demande;
-                    if (dossier.type_demande === 'achat') libelleType = 'Achat comptant';
-                    else if (dossier.type_demande === 'location') libelleType = 'Location (LLD)';
-                    else if (dossier.type_demande === 'financement') libelleType = 'Achat avec financement';
-                    else if (dossier.type_demande === 'autre') libelleType = 'Demande générale';
+                    const nomAffichage   = dossier.client_nom   ? dossier.client_nom   : dossier.contact_nom;
+                    const emailAffichage = dossier.client_email ? dossier.client_email : dossier.contact_email;
 
-                    // Contexte commercial & Formatage ergonomique du véhicule ciblé
-                    let contexte = `<span class="badge bg-secondary">${libelleType}</span>`;
-                    
-                    if (dossier.vehicule_nom && dossier.vehicule_nom !== 'Non spécifié') {
-                        contexte += `<br><span class="small text-muted">${dossier.vehicule_nom} (ID: ${dossier.vehicule_id})</span>`;
-                    } else if (dossier.type_demande !== 'autre') {
-                        // Pour achat/location/financement sans véhicule spécifié
-                        contexte += `<br><span class="small text-muted text-italic">Non spécifié</span>`;
-                    }
+                    const typesLabels = { achat: 'Achat comptant', location: 'Location (LLD)', financement: 'Achat avec financement', autre: 'Demande générale' };
+                    const libelleType = typesLabels[dossier.type_demande] || dossier.type_demande;
 
-                    // Bouton de lecture de la pièce jointe
-                    let cellulePiece = '<span class="text-muted small">Aucune</span>';
-                    if (dossier.document_path) {
-                        const estLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                        const prefixeChemin = estLocalhost ? '' : '/back';
-                        cellulePiece = `<a href="${prefixeChemin}${dossier.document_path}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir</a>`;
-                    }
+                    const vehiculeAffichage = (dossier.vehicule_nom && dossier.vehicule_nom !== 'Non spécifié')
+                        ? `${dossier.vehicule_nom} <span class="text-muted small">(ID: ${dossier.vehicule_id})</span>`
+                        : '<span class="text-muted small">—</span>';
 
-                    // Style des badges de statut
-                    let badgeStatut = '';
-                    if (dossier.statut_dossier === 'valide') {
-                        badgeStatut = '<span class="badge bg-success">Validé</span>';
-                    } else if (dossier.statut_dossier === 'refuse') {
-                        badgeStatut = '<span class="badge bg-danger">Refusé</span>';
-                    } else {
-                        badgeStatut = '<span class="badge bg-warning text-dark">En attente</span>';
-                    }
+                    const estLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const prefixeChemin = estLocalhost ? '' : '/back/';
+                    const cellulePiece = dossier.document_path
+                        ? `<a href="${prefixeChemin}${dossier.document_path}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir</a>`
+                        : '<span class="text-muted small">Aucune</span>';
+
+                    const badgesStatut = { valide: '<span class="badge bg-success">Validé</span>', refuse: '<span class="badge bg-danger">Refusé</span>' };
+                    const badgeStatut = badgesStatut[dossier.statut_dossier] || '<span class="badge bg-warning text-dark">En attente</span>';
 
                     ligne.innerHTML = `
                         <td class="small text-muted">${dossier.id}</td>
                         <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span></td>
-                        <td>${contexte}</td>
+                        <td><span class="badge bg-secondary">${libelleType}</span></td>
+                        <td class="small">${vehiculeAffichage}</td>
                         <td>${cellulePiece}</td>
                         <td>${badgeStatut}</td>
                         <td class="text-end">
@@ -593,6 +576,108 @@
             document.getElementById('detail-message-contenu').textContent = dossier.message || 'Aucun texte fourni.';
 
             modalDetailsDossierInstance.show();
+        }
+
+        // --- LOGIQUE DE TRI DES TABLEAUX ---
+        const etatTri = { vehicules: { col: null, asc: true }, dossiers: { col: null, asc: true } };
+
+        document.addEventListener('click', (e) => {
+            const th = e.target.closest('.tri-col');
+            if (!th) return;
+
+            const table  = th.dataset.table;
+            const col    = th.dataset.col;
+            const etat   = etatTri[table];
+
+            etat.asc = (etat.col === col) ? !etat.asc : true;
+            etat.col = col;
+
+            const comparer = (a, b) => {
+                const va = (a[col] ?? '').toString().toLowerCase();
+                const vb = (b[col] ?? '').toString().toLowerCase();
+                const num_a = parseFloat(a[col]);
+                const num_b = parseFloat(b[col]);
+                if (!isNaN(num_a) && !isNaN(num_b)) return etat.asc ? num_a - num_b : num_b - num_a;
+                return etat.asc ? va.localeCompare(vb, 'fr') : vb.localeCompare(va, 'fr');
+            };
+
+            if (table === 'vehicules') {
+                listeVehiculesLocaux = [...listeVehiculesLocaux].sort(comparer);
+                afficherVehiculesAdminTries();
+            } else {
+                listeDossiersLocaux = [...listeDossiersLocaux].sort(comparer);
+                afficherDossiersAdminTries();
+            }
+
+            // Mise à jour des indicateurs de tri dans les en-têtes
+            document.querySelectorAll(`.tri-col[data-table="${table}"]`).forEach(el => {
+                const base = el.textContent.replace(/ [↑↓↕]$/, '');
+                el.textContent = base + (el.dataset.col === col ? (etat.asc ? ' ↑' : ' ↓') : ' ↕');
+            });
+        });
+
+        function afficherVehiculesAdminTries() {
+            const zoneTableau = document.getElementById('liste-vehicules-admin');
+            zoneTableau.innerHTML = '';
+            listeVehiculesLocaux.forEach(vehicule => {
+                const ligne = document.createElement('tr');
+                const badgeType    = vehicule.type_commercial === 'achat'
+                    ? '<span class="badge bg-success">Achat d\'occasion</span>'
+                    : '<span class="badge bg-info">Location longue durée</span>';
+                const prixAchat    = vehicule.prix_achat    ? `${vehicule.prix_achat} €`           : '<span class="text-muted small">—</span>';
+                const prixLocation = vehicule.prix_location ? `${vehicule.prix_location} € / mois` : '<span class="text-muted small">—</span>';
+                ligne.innerHTML = `
+                    <td class="small text-muted">${vehicule.id}</td>
+                    <td class="fw-bold small">${vehicule.marque}</td>
+                    <td class="small">${vehicule.modele}</td>
+                    <td>${badgeType}</td>
+                    <td class="small">${prixAchat}</td>
+                    <td class="small">${prixLocation}</td>
+                    <td class="text-end">
+                        <button class="btn btn-outline-primary btn-sm me-1" onclick="basculerStatutVehicule(${vehicule.id})">Bascule</button>
+                        <button class="btn btn-warning btn-sm me-1" onclick="ouvrirFormulaireEdition(${vehicule.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="supprimerVehicule(${vehicule.id})">Supprimer</button>
+                    </td>
+                `;
+                zoneTableau.appendChild(ligne);
+            });
+        }
+
+        function afficherDossiersAdminTries() {
+            const zoneTableau = document.getElementById('liste-dossiers-admin');
+            zoneTableau.innerHTML = '';
+            listeDossiersLocaux.forEach(dossier => {
+                const ligne          = document.createElement('tr');
+                const nomAffichage   = dossier.client_nom   ? dossier.client_nom   : dossier.contact_nom;
+                const emailAffichage = dossier.client_email ? dossier.client_email : dossier.contact_email;
+                const typesLabels    = { achat: 'Achat comptant', location: 'Location (LLD)', financement: 'Achat avec financement', autre: 'Demande générale' };
+                const libelleType    = typesLabels[dossier.type_demande] || dossier.type_demande;
+                const vehiculeAffichage = (dossier.vehicule_nom && dossier.vehicule_nom !== 'Non spécifié')
+                    ? `${dossier.vehicule_nom} <span class="text-muted small">(ID: ${dossier.vehicule_id})</span>`
+                    : '<span class="text-muted small">—</span>';
+                const estLocalhost   = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const prefixeChemin  = estLocalhost ? '' : '/back/';
+                const cellulePiece   = dossier.document_path
+                    ? `<a href="${prefixeChemin}${dossier.document_path}" target="_blank" class="btn btn-outline-dark btn-sm fw-bold">Ouvrir</a>`
+                    : '<span class="text-muted small">Aucune</span>';
+                const badgesStatut   = { valide: '<span class="badge bg-success">Validé</span>', refuse: '<span class="badge bg-danger">Refusé</span>' };
+                const badgeStatut    = badgesStatut[dossier.statut_dossier] || '<span class="badge bg-warning text-dark">En attente</span>';
+                ligne.innerHTML = `
+                    <td class="small text-muted">${dossier.id}</td>
+                    <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span></td>
+                    <td><span class="badge bg-secondary">${libelleType}</span></td>
+                    <td class="small">${vehiculeAffichage}</td>
+                    <td>${cellulePiece}</td>
+                    <td>${badgeStatut}</td>
+                    <td class="text-end">
+                        <button class="btn btn-info btn-sm me-1 fw-bold text-white" onclick="ouvrirDetailsDossier(${dossier.id})">Lire</button>
+                        <button class="btn btn-success btn-sm me-1" onclick="modifierStatutDossier(${dossier.id}, 'valide')">Valider</button>
+                        <button class="btn btn-warning btn-sm me-1 text-dark" onclick="modifierStatutDossier(${dossier.id}, 'en_attente')">Attente</button>
+                        <button class="btn btn-danger btn-sm" onclick="modifierStatutDossier(${dossier.id}, 'refuse')">Refuser</button>
+                    </td>
+                `;
+                zoneTableau.appendChild(ligne);
+            });
         }
 
         async function modifierStatutDossier(idDossier, nouveauStatut) {
