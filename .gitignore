@@ -3,3 +3,6 @@ uploads/*
 # Exception pour conserver le dossier vide dans le dépôt Git
 !uploads/.gitkeep
 config/db.php
+vendor/
+coverage/
+.phpunit.result.cache
