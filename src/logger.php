@@ -1,7 +1,7 @@
 <?php
 /**
- * Journalisation des evenements applicatifs de M-Motors.
- * Ecrit dans logs/app.log et envoie un e-mail aux admins concernes (hors environnement local).
+ * Journalisation des événements applicatifs de M-Motors.
+ * Écrit dans logs/app.log et envoie un e-mail aux admins concernés en cas d'erreur critique (hors environnement local).
  */
 class Logger
 {
@@ -42,7 +42,7 @@ class Logger
         }
 
         $ligne = sprintf(
-            "[%s] [%s] %s - %s\n",
+            "[%s] [%s] %s — %s\n",
             date('Y-m-d H:i:s'),
             $niveau,
             $contexte,
@@ -54,16 +54,16 @@ class Logger
 
     private static function alerterParEmail(string $niveau, string $contexte, string $message): void
     {
-        // $bdd est definie dans le scope global par db.php
+        // $bdd est définie dans le scope global par db.php — on y accède via global
         global $bdd;
         if (!isset($bdd)) {
             return;
         }
 
-        // Niveaux declenchant l'alerte selon la preference de chaque admin :
-        // 'info'    -> INFO + WARNING + ERROR
-        // 'warning' -> WARNING + ERROR
-        // 'error'   -> ERROR uniquement
+        // Niveaux déclenchant l'alerte selon la préférence de chaque admin :
+        // 'info'    → INFO + WARNING + ERROR
+        // 'warning' → WARNING + ERROR
+        // 'error'   → ERROR uniquement
         $niveaux_couverts = [
             'info'    => ['INFO', 'WARNING', 'ERROR'],
             'warning' => ['WARNING', 'ERROR'],
@@ -91,8 +91,8 @@ class Logger
         }
 
         $libelles = ['INFO' => 'Information', 'WARNING' => 'Avertissement', 'ERROR' => 'Erreur critique'];
-        $sujet    = '[M-Motors] ' . ($libelles[$niveau] ?? $niveau) . ' detecte';
-        $corps    = "Un evenement de niveau " . $niveau . " a ete detecte sur l'application M-Motors.\n\n";
+        $sujet    = '[M-Motors] ' . ($libelles[$niveau] ?? $niveau) . ' détecté(e)';
+        $corps    = "Un événement de niveau " . $niveau . " a été détecté sur l'application M-Motors.\n\n";
         $corps   .= "Contexte : " . $contexte . "\n";
         $corps   .= "Message  : " . $message . "\n";
         $corps   .= "Date     : " . date('d/m/Y H:i:s') . "\n";

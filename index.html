@@ -41,7 +41,7 @@
                     <span class="text-white-50 small me-4" id="nom-admin"></span>
                     <div class="me-4">
                         <button class="btn btn-sm btn-outline-light active fw-bold me-2" id="btn-onglet-catalogue" onclick="basculerOnglet('catalogue')">Catalogue</button>
-                        <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Dossiers clients</button>
+                        <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-dossiers" onclick="basculerOnglet('dossiers')">Demandes clients</button>
                         <button class="btn btn-sm btn-outline-light fw-bold me-2" id="btn-onglet-utilisateurs" onclick="basculerOnglet('utilisateurs')">Utilisateurs</button>
                         <button class="btn btn-sm btn-outline-warning fw-bold" id="btn-onglet-logs" onclick="basculerOnglet('logs')">Logs</button>
                     </div>
@@ -702,7 +702,7 @@
 
                     ligne.innerHTML = `
                         <td class="small text-muted">${dossier.id}</td>
-                        <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span></td>
+                        <td><span class="fw-bold small">${nomAffichage}</span><br><span class="small text-muted">${emailAffichage}</span><br>${dossier.client_nom ? '<span class="badge bg-success" style="font-size:.65rem">Compte client</span>' : '<span class="badge bg-secondary" style="font-size:.65rem">Visiteur anonyme</span>'}</td>
                         <td><span class="badge bg-secondary">${libelleType}</span></td>
                         <td class="small">${vehiculeAffichage}</td>
                         <td>${cellulePiece}</td>
@@ -974,15 +974,18 @@
                 e.preventDefault();
                 const zoneErreur = document.getElementById('edit-user-erreur');
                 zoneErreur.classList.add('d-none');
+                const mdp = document.getElementById('edit-user-mdp').value.trim();
                 const donnees = {
-                    action:       'modifier',
-                    id:           document.getElementById('edit-user-id').value,
-                    nom:          document.getElementById('edit-user-nom').value,
-                    email:        document.getElementById('edit-user-email').value,
-                    telephone:    document.getElementById('edit-user-telephone').value,
-                    role:         document.getElementById('edit-user-role').value,
-                    mot_de_passe: document.getElementById('edit-user-mdp').value
+                    action:    'modifier',
+                    id:        document.getElementById('edit-user-id').value,
+                    nom:       document.getElementById('edit-user-nom').value,
+                    email:     document.getElementById('edit-user-email').value,
+                    telephone: document.getElementById('edit-user-telephone').value,
+                    role:      document.getElementById('edit-user-role').value,
                 };
+                if (mdp.length > 0) {
+                    donnees.mot_de_passe = mdp;
+                }
                 try {
                     const reponse = await fetch('api/utilisateurs.php', {
                         method: 'POST',

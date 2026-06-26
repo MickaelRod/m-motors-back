@@ -95,7 +95,7 @@ if ($methode === 'POST') {
         $email        = isset($donnees['email'])        ? trim($donnees['email'])         : '';
         $telephone    = isset($donnees['telephone'])    ? trim($donnees['telephone'])     : '';
         $role         = isset($donnees['role'])         ? trim($donnees['role'])          : '';
-        $mot_de_passe = isset($donnees['mot_de_passe']) ? $donnees['mot_de_passe']        : '';
+        $mot_de_passe = (isset($donnees['mot_de_passe']) && $donnees['mot_de_passe'] !== '') ? trim($donnees['mot_de_passe']) : '';
 
         if ($id <= 0 || empty($nom) || empty($email) || empty($telephone) || empty($role)) {
             http_response_code(400);
