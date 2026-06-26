@@ -41,9 +41,10 @@ class Logger
             mkdir($dossier, 0755, true);
         }
 
+        $maintenant = new DateTimeImmutable('now', new DateTimeZone('Europe/Paris'));
         $ligne = sprintf(
             "[%s] [%s] %s — %s\n",
-            date('Y-m-d H:i:s'),
+            $maintenant->format('Y-m-d H:i:s'),
             $niveau,
             $contexte,
             $message
@@ -95,7 +96,7 @@ class Logger
         $corps    = "Un événement de niveau " . $niveau . " a été détecté sur l'application M-Motors.\n\n";
         $corps   .= "Contexte : " . $contexte . "\n";
         $corps   .= "Message  : " . $message . "\n";
-        $corps   .= "Date     : " . date('d/m/Y H:i:s') . "\n";
+        $corps   .= "Date     : " . (new DateTimeImmutable('now', new DateTimeZone('Europe/Paris')))->format('d/m/Y H:i:s') . "\n";
         $entetes  = "From: noreply@m-motors.fr\r\nContent-Type: text/plain; charset=UTF-8";
 
         foreach ($destinataires as $email) {
