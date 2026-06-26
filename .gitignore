@@ -7,3 +7,4 @@ vendor/
 coverage/
 .phpunit.result.cache
 logs/*.log
+CLAUDE.md
